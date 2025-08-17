@@ -4,10 +4,18 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { Lexend } from 'next/font/google';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
+
+// Configure Lexend font
+const lexend = Lexend({ 
+  subsets: ['latin'],
+  variable: '--font-lexend',
+  display: 'swap'
+});
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -15,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className={`${lexend.variable} font-sans antialiased`}>
         <ThemeProvider>
           <Toaster closeButton position="bottom-right" theme="system" />
           <ThemeToggleCorner />
