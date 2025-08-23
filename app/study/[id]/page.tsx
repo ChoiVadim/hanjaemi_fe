@@ -12,7 +12,11 @@ import { Summary } from "@/components/summary";
 import { Test } from "@/components/exam";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { fetchLessonData, fetchLessonsForDifficultyFromAPI, Lesson } from "@/data/dataService";
+import {
+  fetchLessonData,
+  fetchLessonsForDifficultyFromAPI,
+  Lesson,
+} from "@/data/dataService";
 
 // Helper functions (copied from dataService to avoid circular imports)
 function safeParseJSON(jsonString: string): string[] {
@@ -20,21 +24,21 @@ function safeParseJSON(jsonString: string): string[] {
     const parsed = JSON.parse(jsonString);
     return Array.isArray(parsed) ? parsed : [jsonString];
   } catch (error) {
-    console.warn('Failed to parse JSON:', jsonString);
+    console.warn("Failed to parse JSON:", jsonString);
     return [jsonString];
   }
 }
 
-function mapVocabType(apiType: string): 'important' | 'common' | 'new' {
+function mapVocabType(apiType: string): "important" | "common" | "new" {
   switch (apiType.toLowerCase()) {
-    case 'important':
-    case 'top 100':
-      return 'important';
-    case 'rarely use':
-    case 'new':
-      return 'new';
+    case "important":
+    case "top 100":
+      return "important";
+    case "rarely use":
+    case "new":
+      return "new";
     default:
-      return 'common';
+      return "common";
   }
 }
 
@@ -44,12 +48,15 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   const [selectedGrammar, setSelectedGrammar] = useState<string | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [currentLessonData, setCurrentLessonData] = useState<Lesson | null>(null);
+  const [currentLessonData, setCurrentLessonData] = useState<Lesson | null>(
+    null
+  );
   const [lessons, setLessons] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("1");
   const [isLoading, setIsLoading] = useState(true);
-  const [summarySections, setSummarySections] = useState<{ id: string; title: string; content: string[] }[]>([]);
-
+  const [summarySections, setSummarySections] = useState<
+    { id: string; title: string; content: string[] }[]
+  >([]);
 
   // Load lessons for the difficulty
   useEffect(() => {
@@ -58,7 +65,9 @@ export default function LevelPage({ params }: { params: { id: string } }) {
         setIsLoading(true);
         const lessonsData = await fetchLessonsForDifficultyFromAPI(params.id);
         // Sort lessons by lesson_id to ensure consistent order
-        const sortedLessons = lessonsData.sort((a, b) => a.lesson_id - b.lesson_id);
+        const sortedLessons = lessonsData.sort(
+          (a, b) => a.lesson_id - b.lesson_id
+        );
         setLessons(sortedLessons);
         if (sortedLessons.length > 0) {
           setSelectedLessonId(sortedLessons[0].lesson_id?.toString() || "1");
@@ -76,58 +85,69 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   // Load current lesson data from the lessons array
   useEffect(() => {
     if (!selectedLessonId || lessons.length === 0) return;
-    
-    const selectedLesson = lessons.find(lesson => lesson.lesson_id.toString() === selectedLessonId);
+
+    const selectedLesson = lessons.find(
+      (lesson) => lesson.lesson_id.toString() === selectedLessonId
+    );
     if (selectedLesson) {
       // Transform the lesson data to match our Lesson type
       const transformedLesson: Lesson = {
         id: `lesson-${params.id}-${selectedLesson.lesson_id}`,
         number: selectedLesson.lesson_id,
         title: `Lesson ${selectedLesson.lesson_id}`,
-        grammar: selectedLesson.grammars?.map((g: any) => {
-          const examples = safeParseJSON(g.example);
-          const translations = safeParseJSON(g.translation);
-          const descriptions = safeParseJSON(g.description);
-          
-          return {
-            id: `grammar-${g.grammarId}`,
-            title: g.title,
-            description: descriptions.length > 0 ? descriptions[0] : g.description,
-            descriptionKorean: descriptions.length > 0 ? descriptions[0] : undefined,
-            descriptionEnglish: descriptions.length > 1 ? descriptions[1] : undefined,
-            examples: examples,
-            translations: translations,
-            example: examples.length > 0 ? examples[0] : g.example,
-            translation: translations.length > 0 ? translations[0] : g.translation,
-            type: ['writing', 'speaking', 'common'].includes(g.type) 
-              ? g.type as 'writing' | 'speaking' | 'common' 
-              : 'common'
-          };
-        }) || [],
-                 vocabulary: selectedLesson.vocabs?.map((v: any) => ({
-           id: `vocab-${v.vocabId}`,
-           word: v.word,
-           meaning: v.meaning,
-           context: v.context,
-           type: mapVocabType(v.type)
-         })) || [],
-         exams: selectedLesson.exams?.map((e: any) => {
-           const options = safeParseJSON(e.options);
-           return {
-             id: `exam-${e.examId}`,
-             question: e.question,
-             options: options,
-             correctAnswer: parseInt(e.correctAnswer)
-           };
-         }) || []
+        grammar:
+          selectedLesson.grammars?.map((g: any) => {
+            const examples = safeParseJSON(g.example);
+            const translations = safeParseJSON(g.translation);
+            const descriptions = safeParseJSON(g.description);
+
+            return {
+              id: `grammar-${g.grammarId}`,
+              title: g.title,
+              description:
+                descriptions.length > 0 ? descriptions[0] : g.description,
+              descriptionKorean:
+                descriptions.length > 0 ? descriptions[0] : undefined,
+              descriptionEnglish:
+                descriptions.length > 1 ? descriptions[1] : undefined,
+              examples: examples,
+              translations: translations,
+              example: examples.length > 0 ? examples[0] : g.example,
+              translation:
+                translations.length > 0 ? translations[0] : g.translation,
+              type: ["writing", "speaking", "common"].includes(g.type)
+                ? (g.type as "writing" | "speaking" | "common")
+                : "common",
+            };
+          }) || [],
+        vocabulary:
+          selectedLesson.vocabs?.map((v: any) => ({
+            id: `vocab-${v.vocabId}`,
+            word: v.word,
+            meaning: v.meaning,
+            context: v.context,
+            type: mapVocabType(v.type),
+          })) || [],
+        exams:
+          selectedLesson.exams?.map((e: any) => {
+            const options = safeParseJSON(e.options);
+            return {
+              id: `exam-${e.examId}`,
+              question: e.question,
+              options: options,
+              correctAnswer: parseInt(e.correctAnswer),
+            };
+          }) || [],
       };
-      
+
       setCurrentLessonData(transformedLesson);
-      
+
       // Extract summaries from the selected lesson data
       if (selectedLesson.summaries && Array.isArray(selectedLesson.summaries)) {
         const first = selectedLesson.summaries[0];
-        const parsed = parseSummaryContent(typeof first?.content === 'string' ? first.content : '');
+        const parsed = parseSummaryContent(
+          typeof first?.content === "string" ? first.content : ""
+        );
         setSummarySections(parsed);
       } else {
         setSummarySections([]); // Clear summaries if none found
@@ -135,32 +155,40 @@ export default function LevelPage({ params }: { params: { id: string } }) {
     }
   }, [selectedLessonId, lessons, params.id]);
 
-  function parseSummaryContent(raw: string): { id: string; title: string; content: string[] }[] {
+  function parseSummaryContent(
+    raw: string
+  ): { id: string; title: string; content: string[] }[] {
     const titles = [
-      'Key Grammar Points',
-      'Essential Vocabulary',
-      'Cultural Notes'
+      "Key Grammar Points",
+      "Essential Vocabulary",
+      "Cultural Notes",
     ];
     const sections: Record<string, string[]> = {
-      'Key Grammar Points': [],
-      'Essential Vocabulary': [],
-      'Cultural Notes': []
+      "Key Grammar Points": [],
+      "Essential Vocabulary": [],
+      "Cultural Notes": [],
     };
-    let current: string = 'Key Grammar Points';
+    let current: string = "Key Grammar Points";
     if (!raw) return [];
-    const lines = raw.split('\n');
+    const lines = raw.split("\n");
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line) continue;
-      const heading = titles.find(t => line.toLowerCase().startsWith(t.toLowerCase()));
+      const heading = titles.find((t) =>
+        line.toLowerCase().startsWith(t.toLowerCase())
+      );
       if (heading) {
         current = heading;
         continue;
       }
-      const clean = line.replace(/^[-•\s]+/, '');
+      const clean = line.replace(/^[-•\s]+/, "");
       sections[current].push(clean);
     }
-    return titles.map((t, idx) => ({ id: String(idx + 1), title: t, content: sections[t] }));
+    return titles.map((t, idx) => ({
+      id: String(idx + 1),
+      title: t,
+      content: sections[t],
+    }));
   }
 
   const handleGrammarClick = useCallback((grammar: string) => {
@@ -170,8 +198,6 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   const handleWordClick = useCallback((word: string) => {
     setSelectedWord(word);
   }, []);
-
-
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
@@ -185,21 +211,21 @@ export default function LevelPage({ params }: { params: { id: string } }) {
         </Button>
       </div>
 
-             {/* Lesson Navigation Tabs */}
-       <div className="mb-3">
-         <Tabs
-           value={selectedLessonId}
-           onValueChange={setSelectedLessonId}
-         >
-                      <TabsList className="w-full">
-                             {lessons.map((lesson, index) => (
-                 <TabsTrigger key={lesson.lesson_id} value={lesson.lesson_id.toString()}>
-                   Lesson {index + 1}
-                 </TabsTrigger>
-               ))}
-            </TabsList>
-         </Tabs>
-       </div>
+      {/* Lesson Navigation Tabs */}
+      <div className="mb-3">
+        <Tabs value={selectedLessonId} onValueChange={setSelectedLessonId}>
+          <TabsList className="w-full">
+            {lessons.map((lesson, index) => (
+              <TabsTrigger
+                key={lesson.lesson_id}
+                value={lesson.lesson_id.toString()}
+              >
+                Lesson {index + 1}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
 
       <div className="grid gap-4 flex-1 overflow-hidden lg:grid-cols-2">
         <Card className="p-3 flex flex-col overflow-hidden">
@@ -258,7 +284,10 @@ export default function LevelPage({ params }: { params: { id: string } }) {
               <Summary level={selectedLessonId} data={summarySections} />
             </TabsContent>
             <TabsContent value="test" className="flex-1 overflow-auto">
-              <Test level={selectedLessonId} exams={currentLessonData?.exams || []} />
+              <Test
+                level={selectedLessonId}
+                exams={currentLessonData?.exams || []}
+              />
             </TabsContent>
           </Tabs>
         </Card>

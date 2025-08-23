@@ -45,7 +45,7 @@ export default function StudyPage({
       try {
         setIsLoading(true);
         const response = await fetch(
-          `http://127.0.0.1:8000/api/grammar-and-vocabulary/${id}`
+          `http://localhost:8000/api/grammar-and-vocabulary/${id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch study data");
@@ -133,12 +133,13 @@ export default function StudyPage({
       <div className="grid gap-4 lg:grid-cols-2 flex-1 overflow-hidden">
         <div className="space-y-4 overflow-hidden flex flex-col">
           <Card className="p-3">
-            <div className="relative rounded-md overflow-hidden">
+            <div className="relative rounded-md">
               <YoutubeVideo videoId={id} ref={videoRef} />
             </div>
           </Card>
-          <Card className="flex flex-col p-3 overflow-hidden">
-            <Tabs className="flex flex-col flex-1" defaultValue="grammar">
+
+          <Card className="p-3 flex flex-col overflow-hidden">
+            <Tabs className="flex flex-col h-full " defaultValue="grammar">
               <TabsList className="w-full">
                 <TabsTrigger value="grammar">Grammar</TabsTrigger>
                 <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
@@ -153,10 +154,7 @@ export default function StudyPage({
                   isLoading={isLoading}
                 />
               </TabsContent>
-              <TabsContent
-                value="vocabulary"
-                className="flex-1 overflow-auto h-0 p-0 mt-0"
-              >
+              <TabsContent value="vocabulary" className="flex-1 h-0 p-0 mt-0">
                 <Vocabulary
                   type={type}
                   id={id}
