@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔗 Syncing user with backend:', `${backendUrl}/users/sync`);
 
-    // Send to backend
+    // Send to backend - only user ID for verification
     const backendResponse = await fetch(`${backendUrl}/users/sync`, {
       method: 'POST',
       headers: {
@@ -55,12 +55,7 @@ export async function POST(request: NextRequest) {
         // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
       },
       body: JSON.stringify({
-        supabaseUserId: user.id,
-        email: userData.email,
-        fullName: userData.fullName,
-        avatarUrl: userData.avatarUrl,
-        provider: userData.provider,
-        syncedAt: new Date().toISOString()
+        supabaseUserId: user.id
       })
     });
 

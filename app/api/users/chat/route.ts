@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🔗 Saving chat message to backend:', `${backendUrl}/users/${user.id}/chat`);
 
-    // Send chat message to backend
+    // Send chat message to backend - user ID in URL for verification
     const backendResponse = await fetch(`${backendUrl}/users/${user.id}/chat`, {
       method: 'POST',
       headers: {
@@ -55,11 +55,9 @@ export async function POST(request: NextRequest) {
         // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
       },
       body: JSON.stringify({
-        supabaseUserId: user.id,
         message: chatData.message,
         response: chatData.response,
-        lessonContext: chatData.lessonContext,
-        createdAt: new Date().toISOString()
+        lessonContext: chatData.lessonContext
       })
     });
 

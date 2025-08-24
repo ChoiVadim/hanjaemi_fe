@@ -63,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentSession = userSession || session;
     if (!currentSession?.user) return;
 
+    console.log('🔗 Syncing user with backend...');
+    console.log('🆔 Sending Supabase User ID to backend:', currentSession.user.id);
+
     setSyncingBackend(true);
     try {
       const response = await fetch('/api/users/sync', {
@@ -125,6 +128,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
+      // Log initial session info
+      if (session?.user) {
+        console.log('🔄 Initial session found');
+        console.log('🆔 Supabase User ID:', session.user.id);
+        console.log('📧 User Email:', session.user.email);
+      } else {
+        console.log('❌ No initial session found');
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -142,6 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: string, session: Session | null) => {
         console.log('🔄 Auth state changed:', event);
+        
+        // Log Supabase user ID when user logs in
+        if (session?.user) {
+          console.log('🆔 Supabase User ID:', session.user.id);
+          console.log('📧 User Email:', session.user.email);
+          console.log('👤 User Metadata:', session.user.user_metadata);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
