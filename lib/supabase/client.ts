@@ -1,9 +1,9 @@
 "use client";
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Create a singleton instance
 let supabaseInstance: ReturnType<typeof createBrowserClient> | null = null;
@@ -24,61 +24,61 @@ export function getSupabaseConfig() {
 }
 
 export async function signInWithGoogle() {
-  const supabase = createClient()
-  
+  const supabase = createClient();
+
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/study`,
-        flowType: 'pkce',
-        scopes: 'email profile',
+        flowType: "pkce",
+        scopes: "email profile",
       },
-    })
+    });
 
     if (error) {
-      console.error('Google OAuth error:', error)
+      console.error("Google OAuth error:", error);
     }
 
-    return { data, error }
+    return { data, error };
   } catch (err) {
-    console.error('Google OAuth exception:', err)
-    return { data: null, error: { message: 'Google OAuth failed' } }
+    console.error("Google OAuth exception:", err);
+    return { data: null, error: { message: "Google OAuth failed" } };
   }
 }
 
 export async function signInWithKakaoTalk() {
-  const supabase = createClient()
-  
+  const supabase = createClient();
+
   try {
-    console.log('Attempting Kakao OAuth with config:', {
-      provider: 'kakao',
+    console.log("Attempting Kakao OAuth with config:", {
+      provider: "kakao",
       redirectTo: `${window.location.origin}/auth/callback?next=/study`,
-      flowType: 'pkce',
-    })
+      flowType: "pkce",
+    });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'kakao',
+      provider: "kakao",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/study`,
-        flowType: 'pkce',
-        scopes: 'profile_nickname profile_image account_email',
+        flowType: "pkce",
+        scopes: "profile_nickname profile_image account_email",
       },
-    })
+    });
 
-    console.log('Kakao OAuth response:', { data, error })
+    console.log("Kakao OAuth response:", { data, error });
 
     if (error) {
-      console.error('Kakao OAuth error details:', {
+      console.error("Kakao OAuth error details:", {
         message: error.message,
         status: error.status,
-        details: error
-      })
+        details: error,
+      });
     }
 
-    return { data, error }
+    return { data, error };
   } catch (err) {
-    console.error('Kakao OAuth exception:', err)
-    return { data: null, error: { message: 'Kakao OAuth failed' } }
+    console.error("Kakao OAuth exception:", err);
+    return { data: null, error: { message: "Kakao OAuth failed" } };
   }
 }
