@@ -12,7 +12,7 @@ import { Flashcards } from "@/components/flashcards";
 import { Summary } from "@/components/summary";
 import { Test } from "@/components/exam";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle, FileX } from "lucide-react";
 import "react-loading-skeleton/dist/skeleton.css";
 
 export default function StudyPage({
@@ -33,6 +33,7 @@ export default function StudyPage({
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noSubtitles, setNoSubtitles] = useState(false);
 
   useEffect(() => {
     if (type === "youtube") {
@@ -44,12 +45,26 @@ export default function StudyPage({
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        setNoSubtitles(false);
         const response = await fetch(
           `http://localhost:8000/api/grammar-and-vocabulary/${id}`
         );
+
         if (!response.ok) {
+          // Handle 404 or other error responses
+          if (response.status === 404) {
+            setNoSubtitles(true);
+            return;
+          }
+          
+          const errorData = await response.json().catch(() => null);
+          if (errorData?.error === "No transcript found for this video ID") {
+            setNoSubtitles(true);
+            return;
+          }
           throw new Error("Failed to fetch study data");
         }
+
         const data = await response.json();
         setStudyData(data);
       } catch (error) {
@@ -139,32 +154,51 @@ export default function StudyPage({
           </Card>
 
           <Card className="p-3 flex flex-col overflow-hidden">
-            <Tabs className="flex flex-col h-full " defaultValue="grammar">
-              <TabsList className="w-full">
-                <TabsTrigger value="grammar">Grammar</TabsTrigger>
-                <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
-              </TabsList>
-              <TabsContent value="grammar" className="flex-1 overflow-auto">
-                <Grammar
-                  type={type}
-                  id={id}
-                  onGrammarClick={handleGrammarClick}
-                  disabled={isChatLoading}
-                  data={studyData?.grammar || []}
-                  isLoading={isLoading}
-                />
-              </TabsContent>
-              <TabsContent value="vocabulary" className="flex-1 h-0 p-0 mt-0">
-                <Vocabulary
-                  type={type}
-                  id={id}
-                  onWordClick={handleWordClick}
-                  disabled={isChatLoading}
-                  data={studyData?.vocabulary || []}
-                  isLoading={isLoading}
-                />
-              </TabsContent>
-            </Tabs>
+            {noSubtitles ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 p-8">
+                <FileX className="w-16 h-16 text-muted-foreground" />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">
+                    No Subtitles Available
+                  </h3>
+                  <p className="text-muted-foreground max-w-md">
+                    This video doesn't have subtitles or transcripts available.
+                    Grammar and vocabulary analysis requires subtitles to work.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Try a different video with available subtitles</span>
+                </div>
+              </div>
+            ) : (
+              <Tabs className="flex flex-col h-full " defaultValue="grammar">
+                <TabsList className="w-full">
+                  <TabsTrigger value="grammar">Grammar</TabsTrigger>
+                  <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
+                </TabsList>
+                <TabsContent value="grammar" className="flex-1 overflow-auto">
+                  <Grammar
+                    type={type}
+                    id={id}
+                    onGrammarClick={handleGrammarClick}
+                    disabled={isChatLoading}
+                    data={studyData?.grammar || []}
+                    isLoading={isLoading}
+                  />
+                </TabsContent>
+                <TabsContent value="vocabulary" className="flex-1 h-0 p-0 mt-0">
+                  <Vocabulary
+                    type={type}
+                    id={id}
+                    onWordClick={handleWordClick}
+                    disabled={isChatLoading}
+                    data={studyData?.vocabulary || []}
+                    isLoading={isLoading}
+                  />
+                </TabsContent>
+              </Tabs>
+            )}
           </Card>
         </div>
         <Card className="p-3 flex flex-col overflow-hidden h-full max-h-full">
