@@ -9,6 +9,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
+import { AuthProvider } from "@/components/context/auth-context";
 
 // Configure Lexend font
 const lexend = Lexend({ 
@@ -25,20 +26,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
         <ThemeProvider>
-          <Toaster closeButton position="bottom-right" theme="system" />
-          <ThemeToggleCorner />
-          <div className="flex min-h-screen">
-            {showSidebar ? (
-              <SidebarProvider>
-                <AppSidebar />
-                <main className="flex-1">{children}</main>
-              </SidebarProvider>
-            ) : (
-              <div className="flex-1">
-                <main>{children}</main>
-              </div>
-            )}
-          </div>
+          <AuthProvider>
+            <Toaster closeButton position="bottom-right" theme="system" />
+            <ThemeToggleCorner />
+            <div className="flex min-h-screen">
+              {showSidebar ? (
+                <SidebarProvider>
+                  <AppSidebar />
+                  <main className="flex-1">{children}</main>
+                </SidebarProvider>
+              ) : (
+                <div className="flex-1">
+                  <main>{children}</main>
+                </div>
+              )}
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { JaemiLogo } from "@/components/jaemi-logo";
+import { useAuth } from "@/components/context/auth-context";
 
 const platformItems = [
   {
@@ -71,18 +72,24 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { open, setOpen, toggleSidebar } = useSidebar();
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const { user, signOut } = useAuth();
 
   // TODO: Fetch history from API
   // Only access localStorage after component is mounted (client-side)
   useEffect(() => {
     const searchHistory = localStorage.getItem("searchHistory");
     if (searchHistory) {
-      setHistory(JSON.parse(searchHistory));
+      const historyData = JSON.parse(searchHistory);
+      // Remove duplicates based on id
+      const uniqueHistory = historyData.filter((item: HistoryItem, index: number, self: HistoryItem[]) => 
+        index === self.findIndex((t) => t.id === item.id)
+      );
+      setHistory(uniqueHistory);
     }
   }, []);
 
-  const handleSignOut = () => {
-    // Here you would typically handle the sign out logic
+  const handleSignOut = async () => {
+    await signOut();
     router.push("/");
   };
 
@@ -185,19 +192,20 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    {history.map((item) => (
-                      <SidebarMenuButton
-                        asChild
-                        className="h-9 justify-start gap-2 px-3 hover:bg-accent/50"
-                      >
-                        <Link href={`/youtube/${item.id}`}>
-                          <div className="grid place-items-center h-4 w-4">
-                            YT
-                          </div>
-                          <span key={item.id}>{item.title || "Untitled"}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    ))}
+                                      {history.map((item) => (
+                    <SidebarMenuButton
+                      key={item.id}
+                      asChild
+                      className="h-9 justify-start gap-2 px-3 hover:bg-accent/50"
+                    >
+                      <Link href={`/youtube/${item.id}`}>
+                        <div className="grid place-items-center h-4 w-4">
+                          YT
+                        </div>
+                        <span>{item.title || "Untitled"}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  ))}
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -216,17 +224,17 @@ export function AppSidebar() {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8 rounded">
                       <AvatarImage
-                        src="https://github.com/shadcn.png"
+                        src={user?.user_metadata?.avatar_url || "https://github.com/shadcn.png"}
                         alt="user"
                       />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        SC
+                        {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start text-left">
-                      <span className="text-sm">Choi Vadim</span>
+                      <span className="text-sm">{user?.user_metadata?.full_name || "User"}</span>
                       <span className="text-xs text-muted-foreground">
-                        tsoivadim97@gmail.com
+                        {user?.email || "No email"}
                       </span>
                     </div>
                   </div>
@@ -273,11 +281,11 @@ export function AppSidebar() {
                   <div className="py-3 flex justify-center cursor-pointer">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src="https://github.com/shadcn.png"
+                        src={user?.user_metadata?.avatar_url || "https://github.com/shadcn.png"}
                         alt="user"
                       />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        SC
+                        {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </div>
