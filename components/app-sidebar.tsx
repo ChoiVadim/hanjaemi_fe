@@ -11,6 +11,7 @@ import {
   CreditCard,
   User,
   FileText,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -37,6 +38,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { JaemiLogo } from "@/components/jaemi-logo";
 import { useAuth } from "@/components/context/auth-context";
@@ -59,34 +67,41 @@ const platformItems = [
   },
 ];
 
-type HistoryItem = {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: Date;
-  type: "youtube" | "topic" | "study";
+type ChatHistoryItem = {
+  id: number;
+  message: string;
+  response?: string;
+  lessonContext?: number;
+  createdAt: string;
 };
 
 export function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const { open, setOpen, toggleSidebar } = useSidebar();
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const { user, signOut } = useAuth();
+  const { user, signOut, backendData, loading: authLoading } = useAuth();
 
-  // TODO: Fetch history from API
-  // Only access localStorage after component is mounted (client-side)
-  useEffect(() => {
-    const searchHistory = localStorage.getItem("searchHistory");
-    if (searchHistory) {
-      const historyData = JSON.parse(searchHistory);
-      // Remove duplicates based on id
-      const uniqueHistory = historyData.filter((item: HistoryItem, index: number, self: HistoryItem[]) => 
-        index === self.findIndex((t) => t.id === item.id)
-      );
-      setHistory(uniqueHistory);
-    }
-  }, []);
+  // Get chat history from backend data
+  const chatHistory: ChatHistoryItem[] = backendData?.chatHistory || [];
+
+  // Format chat history for display in sidebar
+  const formatChatHistoryForSidebar = (history: ChatHistoryItem[]) => {
+    return history
+      .slice(0, 10) // Limit to 10 most recent conversations
+      .map((chat) => ({
+        id: chat.id,
+        title: chat.message.length > 30 
+          ? `${chat.message.substring(0, 30)}...` 
+          : chat.message,
+        fullMessage: chat.message,
+        response: chat.response,
+        lessonContext: chat.lessonContext,
+        createdAt: new Date(chat.createdAt),
+      }))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Most recent first
+  };
+
+  const formattedChatHistory = formatChatHistoryForSidebar(chatHistory);
 
   const handleSignOut = async () => {
     await signOut();
@@ -187,27 +202,72 @@ export function AppSidebar() {
           {open && (
             <SidebarGroup className="pt-3">
               <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-                History
+                Chat History
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                                      {history.map((item) => (
-                    <SidebarMenuButton
-                      key={item.id}
-                      asChild
-                      className="h-9 justify-start gap-2 px-3 hover:bg-accent/50"
-                    >
-                      <Link href={`/youtube/${item.id}`}>
-                        <div className="grid place-items-center h-4 w-4">
-                          YT
-                        </div>
-                        <span>{item.title || "Untitled"}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  ))}
-                  </SidebarMenuItem>
-                </SidebarMenu>
+                {authLoading ? (
+                  <div className="px-3 py-2">
+                    <div className="text-xs text-muted-foreground animate-pulse">Loading chat history...</div>
+                  </div>
+                ) : formattedChatHistory.length > 0 ? (
+                  <ScrollArea className="h-48">
+                    <TooltipProvider>
+                      <SidebarMenu>
+                        {formattedChatHistory.map((chat) => (
+                          <SidebarMenuItem key={chat.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SidebarMenuButton
+                                  className="h-auto min-h-[36px] justify-start gap-2 px-3 py-2 hover:bg-accent/50 cursor-pointer transition-colors"
+                                  onClick={() => {
+                                    // Navigate to study page to see chat
+                                    router.push('/study');
+                                  }}
+                                >
+                                  <MessageCircle className="shrink-0 h-3 w-3 text-muted-foreground" />
+                                  <div className="flex flex-col gap-0.5 text-left flex-1 min-w-0">
+                                    <span className="text-xs font-medium truncate">
+                                      {chat.title}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground">
+                                      {chat.createdAt.toLocaleDateString()} • 
+                                      {chat.lessonContext ? ` Lesson ${chat.lessonContext}` : ' General'}
+                                    </span>
+                                  </div>
+                                </SidebarMenuButton>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="max-w-xs">
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-xs text-primary">Question:</p>
+                                  <p className="text-xs">{chat.fullMessage}</p>
+                                  {chat.response && (
+                                    <>
+                                      <p className="font-semibold text-xs text-primary pt-2">Response:</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {chat.response.length > 150 
+                                          ? `${chat.response.substring(0, 150)}...` 
+                                          : chat.response}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </TooltipProvider>
+                  </ScrollArea>
+                ) : (
+                  <div className="px-3 py-2">
+                    <div className="text-xs text-muted-foreground">
+                      💬 No chat history yet
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Start a conversation to see history
+                    </div>
+                  </div>
+                )}
               </SidebarGroupContent>
             </SidebarGroup>
           )}

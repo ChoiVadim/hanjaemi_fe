@@ -6,18 +6,37 @@ export async function GET(
 ) {
   try {
     const { difficultyId } = params;
-    const base = process.env.BACKEND_URL;
+    const backendUrl = process.env.BACKEND_URL;
     
-    const response = await fetch(`${base}/difficulty/${difficultyId}/lessons`, {
+    if (!backendUrl) {
+      console.error('❌ BACKEND_URL environment variable is not set');
+      return NextResponse.json(
+        { message: 'Backend configuration error' },
+        { status: 500 }
+      );
+    }
+
+    console.log('🔗 Fetching lessons from backend:', `${backendUrl}/difficulty/${difficultyId}/lessons`);
+    
+    const response = await fetch(`${backendUrl}/difficulty/${difficultyId}/lessons`, {
       cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        // Add authentication header if needed
+        // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch lessons for difficulty ${difficultyId}`);
+      console.error(`❌ Backend API error: ${response.status} ${response.statusText}`);
+      return NextResponse.json(
+        { message: `Failed to fetch lessons for difficulty ${difficultyId}` },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
-    
+    console.log('✅ Successfully fetched lessons from backend');
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching lessons:', error);

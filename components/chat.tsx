@@ -10,6 +10,8 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { Bot, User } from "lucide-react";
+import { useAuth } from "@/components/context/auth-context";
+import { clearLocalChatData, transformChatHistory } from "@/lib/chat-utils";
 
 interface Message {
   id: string;
@@ -36,57 +38,37 @@ export function Chat({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const isInitialMount = useRef(true);
+  const { backendData, loading: authLoading } = useAuth();
 
-  // TODO: Fetch messages from API
+  // Clear any existing localStorage chat data on component mount
   useEffect(() => {
-    const storageKey = `chatMessages_${level}`;
-    try {
-      const storedMessages = localStorage.getItem(storageKey);
-      console.log(`Attempting to load messages for ${storageKey}`);
-      if (storedMessages !== null && storedMessages !== "[]") {
-        const parsedMessages = JSON.parse(storedMessages);
-        setMessages(parsedMessages);
-        console.log("Loaded messages:", parsedMessages);
+    clearLocalChatData();
+  }, []);
+
+  // Load chat history from backend data
+  useEffect(() => {
+    if (!authLoading) {
+      if (backendData?.chatHistory && backendData.chatHistory.length > 0) {
+        console.log("📊 Loading chat history from backend:", backendData.chatHistory);
+        
+        // Transform backend chat history to frontend message format
+        const transformedMessages = transformChatHistory(backendData.chatHistory);
+        
+        setMessages(transformedMessages);
+        console.log("✅ Chat history loaded:", transformedMessages);
       } else {
-        console.log("No stored messages found, setting default message.");
+        // No backend data or empty chat history, show default greeting
+        console.log("💬 No chat history found, showing default greeting");
         setMessages([
           {
             id: generateMessageId(),
-            content: "안녕, 어떻게 도와줄까?",
+            content: "안녕하세요! 한국어 학습을 도와드리겠습니다. 궁금한 것이 있으면 언제든 물어보세요! 👋",
             sender: "assistant",
           },
         ]);
       }
-    } catch (error) {
-      console.error(
-        `Failed to load initial messages for ${storageKey}:`,
-        error
-      );
     }
-  }, [level]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else {
-      const storageKey = `chatMessages_${level}`;
-      try {
-        console.log("Current messages before saving:", messages);
-        const storedMessages = localStorage.getItem(storageKey);
-        const parsedStoredMessages = storedMessages
-          ? JSON.parse(storedMessages)
-          : [];
-
-        if (JSON.stringify(parsedStoredMessages) !== JSON.stringify(messages)) {
-          localStorage.setItem(storageKey, JSON.stringify(messages));
-          console.log(`Saved messages for ${storageKey}:`, messages);
-        }
-      } catch (error) {
-        console.error(`Failed to save messages for ${storageKey}:`, error);
-      }
-    }
-  }, [messages, level]);
+  }, [backendData, authLoading]);
 
   // Handle grammar selection
   useEffect(() => {
