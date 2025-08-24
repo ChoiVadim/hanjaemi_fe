@@ -30,7 +30,21 @@ export default function YouTubeAnalysis() {
 
   const handleAnalyze = async () => {
     try {
-      const videoId = new URL(videoUrl).searchParams.get("v");
+      const url = new URL(videoUrl);
+      let videoId: string | null = null;
+
+      // Handle youtube.com/watch?v= format
+      if (
+        url.hostname === "www.youtube.com" ||
+        url.hostname === "youtube.com"
+      ) {
+        videoId = url.searchParams.get("v");
+      }
+      // Handle youtu.be/ format
+      else if (url.hostname === "youtu.be") {
+        videoId = url.pathname.slice(1); // Remove the leading slash
+      }
+
       if (videoId) {
         // Create a placeholder history item
         const newHistory: HistoryItem = {
