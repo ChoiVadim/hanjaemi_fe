@@ -75,11 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           'Authorization': `Bearer ${currentSession.access_token}`
         },
         body: JSON.stringify({
-          supabaseUserId: currentSession.user.id,
-          email: currentSession.user.email,
-          fullName: currentSession.user.user_metadata?.full_name,
-          avatarUrl: currentSession.user.user_metadata?.avatar_url,
-          provider: currentSession.user.app_metadata?.provider
+          supabaseId: currentSession.user.id
         })
       });
 
