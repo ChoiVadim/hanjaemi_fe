@@ -126,7 +126,12 @@ export function Chat({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          messages: [{ role: "user", content: message }],
+          messages: [...messages, { id: "temp", sender: "user", content: message }].map(
+            (msg) => ({
+              role: msg.sender,
+              content: msg.content,
+            })
+          ),
         }),
       });
 
