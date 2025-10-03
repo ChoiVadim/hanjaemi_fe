@@ -7,8 +7,6 @@ import { usePathname } from "next/navigation";
 import { Lexend } from 'next/font/google';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeToggleCorner } from "@/components/theme-toggle-corner";
 import { AuthProvider } from "@/components/context/auth-context";
 
 // Configure Lexend font
@@ -25,10 +23,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <Toaster closeButton position="bottom-right" theme="system" />
-            <ThemeToggleCorner />
+        <AuthProvider>
+          <Toaster closeButton position="bottom-right" />
             <div className="flex min-h-screen">
               {showSidebar ? (
                 <SidebarProvider>
@@ -41,8 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </div>
               )}
             </div>
-          </AuthProvider>
-        </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

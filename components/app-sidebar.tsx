@@ -61,7 +61,7 @@ const platformItems = [
     href: "/youtube",
   },
   {
-    title: "TOPIC",
+    title: "TOPIK",
     icon: FileText,
     href: "/topic",
   },
