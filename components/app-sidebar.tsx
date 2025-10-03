@@ -143,6 +143,7 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarContent
+          data-tour="sidebar-nav"
           className={cn(
             "transition-all duration-300 ease-in-out",
             open ? "px-2" : ""
@@ -278,6 +279,7 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
+                  data-tour="user-profile"
                   variant="ghost"
                   className="w-full flex items-center justify-between p-3 h-auto rounded-none border-t"
                 >

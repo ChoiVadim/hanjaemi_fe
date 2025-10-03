@@ -65,10 +65,14 @@ function GrammarRuleItem({
   rule,
   onGrammarClick,
   disabled,
+  isSelected,
+  onSelect,
 }: {
   rule: GrammarRule;
   onGrammarClick: (grammar: string, timestamp?: string) => void;
   disabled?: boolean;
+  isSelected: boolean;
+  onSelect: (grammar: string) => void;
 }) {
   const [showAllExamples, setShowAllExamples] = useState(false);
   
@@ -81,20 +85,40 @@ function GrammarRuleItem({
   
   const hasMoreExamples = rule.examples && rule.examples.length > 3;
   
+  const handleClick = () => {
+    if (isSelected) {
+      // Second click - send to chat
+      onGrammarClick(rule.title, rule.timestamp);
+    } else {
+      // First click - just select
+      onSelect(rule.title);
+    }
+  };
+
   return (
-    <Button
+    <div
       key={rule.id}
-      variant="outline"
-      className="w-full h-auto py-3 justify-start text-left hover:bg-muted cursor-pointer"
-      onClick={() => onGrammarClick(rule.title, rule.timestamp)}
-      disabled={disabled}
+      className={cn(
+        "w-full h-auto py-3 px-3 border border-border rounded-md cursor-pointer transition-all duration-200",
+        isSelected && "bg-slate-800 text-slate-50 border-slate-600"
+      )}
+      onClick={handleClick}
     >
-      <div className="flex items-start gap-4 w-full min-h-[120px]">
+      <div className={cn(
+        "flex items-start gap-4 w-full transition-all duration-200",
+        isSelected ? "min-h-[120px]" : "min-h-[60px]"
+      )}>
         {/* Wrap the Icon in a div instead of directly in TooltipTrigger to avoid SlotClone issues */}
         <Tooltip>
           <TooltipTrigger>
-            <div className="rounded-md bg-muted p-2 shrink-0">
-              <Icon className="h-4 w-4" />
+            <div className={cn(
+              "rounded-md p-2 shrink-0 transition-colors duration-200",
+              isSelected ? "bg-white" : "bg-muted"
+            )}>
+              <Icon className={cn(
+                "h-4 w-4 transition-colors duration-200",
+                isSelected ? "text-slate-800" : "text-muted-foreground"
+              )} />
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -112,35 +136,35 @@ function GrammarRuleItem({
           {/* Display both Korean and English descriptions */}
           {rule.descriptionKorean && rule.descriptionEnglish ? (
             <div className="space-y-1">
-              <p className="text-sm text-foreground whitespace-normal break-words">
+              <p className="text-sm text-slate-200 whitespace-normal break-words">
                 🇰🇷 {rule.descriptionKorean}
               </p>
-              <p className="text-sm text-muted-foreground whitespace-normal break-words">
+              <p className="text-sm text-slate-300 whitespace-normal break-words">
                 🇬🇧 {rule.descriptionEnglish}
               </p>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground whitespace-normal break-words">
+            <p className="text-sm text-slate-300 whitespace-normal break-words">
               {rule.description}
             </p>
           )}
           
-          {/* Display examples */}
-          {rule.examples && rule.examples.length > 0 && (
+          {/* Display examples only when selected */}
+          {isSelected && rule.examples && rule.examples.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Examples:</p>
+              <p className="text-xs font-medium text-slate-300">Examples:</p>
               <div className="space-y-1">
                 {displayedExamples.map((example, index) => (
-                  <div key={index} className="text-xs bg-muted/50 p-2 rounded">
-                    <p className="font-medium text-foreground">{example}</p>
+                  <div key={index} className="text-xs bg-slate-700/50 border border-slate-600/50 p-3 rounded-md">
+                    <p className="font-medium text-slate-100">{example}</p>
                     {rule.translations && rule.translations[index] && (
-                      <p className="text-muted-foreground mt-1">{rule.translations[index]}</p>
+                      <p className="text-slate-300 mt-1">{rule.translations[index]}</p>
                     )}
                   </div>
                 ))}
                 {hasMoreExamples && (
                   <button
-                    className="text-xs text-muted-foreground hover:text-foreground italic underline cursor-pointer transition-colors"
+                    className="text-xs text-slate-400 italic underline cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent triggering the parent button
                       setShowAllExamples(!showAllExamples);
@@ -157,13 +181,13 @@ function GrammarRuleItem({
           )}
           
           {rule.timestamp && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-400">
               Timestamp: {rule.timestamp}
             </p>
           )}
         </div>
       </div>
-    </Button>
+    </div>
   );
 }
 
@@ -182,6 +206,7 @@ export function Grammar({
   data: GrammarRule[];
   isLoading?: boolean;
 }) {
+  const [selectedGrammar, setSelectedGrammar] = useState<string | null>(null);
   if (isLoading) {
     return (
       <ScrollArea
@@ -208,6 +233,8 @@ export function Grammar({
                 rule={rule}
                 onGrammarClick={onGrammarClick}
                 disabled={disabled}
+                isSelected={selectedGrammar === rule.title}
+                onSelect={setSelectedGrammar}
               />
             ))}
           </div>

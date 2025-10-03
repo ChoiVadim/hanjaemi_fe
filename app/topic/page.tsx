@@ -45,12 +45,13 @@ export default function TopicPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
+
       <div className="max-w-5xl mx-auto flex flex-col items-center">
         <h1 className="text-4xl font-bold text-center mb-4">Choose a Topic</h1>
         <p className="text-muted-foreground text-center mb-12">
           Select the area of Korean language you want to focus on
         </p>
-        <div className="lg:w-2/3 grid gap-6 md:grid-cols-2">
+        <div data-tour="topik-topics" className="lg:w-2/3 grid gap-6 md:grid-cols-2">
           {topics.map((topic) => (
             <Card
               key={topic.name}

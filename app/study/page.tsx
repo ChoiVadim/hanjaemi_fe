@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   GraduationCap, 
   Trophy, 
@@ -11,21 +14,19 @@ import {
   CheckCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { fetchDifficulties } from "@/data/dataService";
+import { useEffect, useState } from "react";
 
-type Difficulty = {
-  difficultyId: number;
-  name: string;
-  description: string;
-  lessonCount: number;
-};
+export default function StudyPage() {
+  const [levels, setLevels] = useState<any[]>([]);
 
-export default async function StudyPage() {
-  const base = process.env.BACKEND_URL;
-  const res = await fetch(`${base}/difficulty`, {
-    cache: "no-store", // always fresh
-  });
-  if (!res.ok) throw new Error("Failed to load difficulty list");
-  const levels: Difficulty[] = await res.json();
+  useEffect(() => {
+    const loadLevels = async () => {
+      const data = await fetchDifficulties();
+      setLevels(data);
+    };
+    loadLevels();
+  }, []);
 
   // Define icons for each level
   const getLevelIcon = (levelName: string) => {
@@ -43,10 +44,11 @@ export default async function StudyPage() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+
       <div className="h-full flex items-center justify-center px-8 py-8">
         <div className="text-center">
           {/* Header Section */}
-          <div className="mb-8">
+          <div data-tour="study-header" className="mb-8">
           
             <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">
               Choose Your Level
@@ -57,13 +59,13 @@ export default async function StudyPage() {
           </div>
 
           {/* Levels Grid */}
-          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto mb-8 px-4">
+          <div data-tour="level-cards" className="grid gap-3 grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto mb-8 px-4">
             {levels.map((level, index) => {
-              const IconComponent = getLevelIcon(level.name);
-              const gradientClass = getLevelColor(level.name);
+              const IconComponent = getLevelIcon(level.title);
+              const gradientClass = getLevelColor(level.title);
               
               return (
-                <Link key={level.difficultyId} href={`/study/${level.difficultyId}`}>
+                <Link key={level.id} href={`/study/${level.id}`}>
                   <Card className="group relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-white w-64 h-64">
                     <CardContent className="p-6 h-full w-full flex flex-col items-center text-center justify-center">
                       {/* Icon Section */}
@@ -76,7 +78,7 @@ export default async function StudyPage() {
                       {/* Content Section */}
                       <div className="flex flex-col items-center text-center space-y-3 px-3">
                         <h2 className="text-lg font-bold text-black group-hover:text-gray-700 transition-colors">
-                          {level.name}
+                          {level.title}
                         </h2>
                         <p className="text-base text-gray-600 leading-relaxed">
                           {level.description}
@@ -104,7 +106,7 @@ export default async function StudyPage() {
           </div>
 
           {/* Bottom CTA */}
-          <div>
+          <div data-tour="placement-test">
             <Link href="/placement-test">
               <button className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
                 Take a Placement Test

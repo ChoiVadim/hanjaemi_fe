@@ -58,24 +58,25 @@ export default function HomePage() {
         <div className="absolute bottom-32 left-1/3 w-1.5 h-1.5 bg-gray-300 rounded-full opacity-30 animate-dot-float-3"></div>
         <div className="absolute bottom-20 right-1/2 w-2 h-2 bg-gray-400 rounded-full opacity-40 animate-dot-float-4"></div>
       </div>
+
       {/* Hero Section - Centered */}
       <section ref={heroRef} className="min-h-screen flex items-center justify-center px-6">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-6">
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-black">
+            <h1 data-tour="hero-title" className="text-5xl md:text-7xl font-bold tracking-tight text-black">
               Stop Struggling with{" "}
               <span className="block text-gray-600">Boring Korean Textbooks</span>
               <span className="block bg-gradient-to-r from-black to-gray-600 bg-clip-text text-transparent">
                 Start Learning with HanJaemi
               </span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p data-tour="hero-description" className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Finally, a Korean learning platform that makes you <strong className="text-black">actually want to study</strong> with 
               gamified lessons, real K-dramas, and an AI tutor that's always available.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div data-tour="cta-buttons" className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg">
               <Link href="/register">Try Free - No Credit Card</Link>
             </Button>
@@ -88,7 +89,7 @@ export default function HomePage() {
       </section>
 
       {/* Problems Section - Appears on scroll */}
-      <section ref={problemsRef} className="py-20 bg-gray-50">
+      <section ref={problemsRef} data-tour="problems-section" className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
@@ -160,7 +161,7 @@ export default function HomePage() {
       </section>
 
       {/* Solutions Section - Appears on scroll */}
-      <section ref={solutionsRef} className="py-20 bg-white">
+      <section ref={solutionsRef} data-tour="solutions-section" className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">

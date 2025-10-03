@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTour } from "@/components/context/tour-context";
 
 interface Question {
   id: string;
@@ -17,6 +18,7 @@ interface Question {
 export function Test({ level, exams = [] }: { level: string; exams?: Question[] }) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
+  const { startTour } = useTour();
 
   const handleSubmit = () => {
     setShowResults(true);
@@ -32,7 +34,7 @@ export function Test({ level, exams = [] }: { level: string; exams?: Question[] 
   return (
     <div className="flex flex-col h-full rounded-lg">
       <ScrollArea className="flex-1">
-        <div className="space-y-4">
+        <div data-tour="exam-questions" className="space-y-4">
           {exams.length === 0 ? (
             <Card>
               <CardContent className="p-4">
@@ -97,6 +99,7 @@ export function Test({ level, exams = [] }: { level: string; exams?: Question[] 
       </ScrollArea>
       {!showResults && (
         <Button
+          data-tour="exam-submit"
           className="h-9"
           onClick={handleSubmit}
           disabled={Object.keys(answers).length !== exams.length}

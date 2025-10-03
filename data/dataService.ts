@@ -1,3 +1,54 @@
+// Import the static data
+import levelsData from './levels-data.json';
+
+// Type definitions for the JSON data structure
+type LevelsData = {
+  difficulties: Array<{
+    difficultyId: number;
+    name: string;
+    description: string;
+    lessonCount: number;
+  }>;
+  levels: Record<string, {
+    title: string;
+    description: string;
+    lessons: Array<{
+      id: string;
+      number: number;
+      title: string;
+      description: string;
+      grammar: Array<{
+        id: string;
+        title: string;
+        description: string;
+        example: string;
+        translation: string;
+        type: string;
+      }>;
+      vocabulary: Array<{
+        id: string;
+        word: string;
+        meaning: string;
+        context: string;
+        type: string;
+      }>;
+      exams: Array<{
+        id: string;
+        question: string;
+        options: string[];
+        correctAnswer: number;
+      }>;
+      summaries: Array<{
+        id: string;
+        title: string;
+        content: string;
+      }>;
+    }>;
+  }>;
+};
+
+const typedLevelsData = levelsData as LevelsData;
+
 // Database types matching your MySQL schema
 export type DifficultyFromDB = {
   difficulty_id: number;
@@ -86,6 +137,13 @@ export type Lesson = {
   grammar: Grammar[];
   vocabulary: Vocabulary[];
   exams: Exam[];
+  summaries: Summary[];
+};
+
+export type Summary = {
+  id: string;
+  title: string;
+  content: string;
 };
 
 export type Grammar = {
@@ -129,24 +187,15 @@ function mapVocabType(apiType: string): 'important' | 'common' | 'new' {
   }
 }
 
-// API service functions
+// API service functions - now using static data instead of API calls
 export async function fetchDifficulties(): Promise<Difficulty[]> {
   try {
-    const response = await fetch('/api/difficulties', {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch difficulties');
-    }
-    
-    const difficulties: DifficultyFromDB[] = await response.json();
-    
-    return difficulties.map(d => ({
-      id: d.difficulty_id.toString(),
+    // Transform the static data to match the expected format
+    return typedLevelsData.difficulties.map(d => ({
+      id: d.difficultyId.toString(),
       title: d.name,
       description: d.description,
-      lessonCount: d.lesson_count
+      lessonCount: d.lessonCount
     }));
   } catch (error) {
     console.error('Error fetching difficulties:', error);
@@ -156,47 +205,44 @@ export async function fetchDifficulties(): Promise<Difficulty[]> {
 
 export async function fetchLessonsForDifficulty(difficultyId: string): Promise<Lesson[]> {
   try {
-    const [lessonsResponse, grammarResponse, vocabularyResponse] = await Promise.all([
-      fetch(`/api/lessons/${difficultyId}`, { cache: 'no-store' }),
-      fetch(`/api/grammar/${difficultyId}`, { cache: 'no-store' }),
-      fetch(`/api/vocabulary/${difficultyId}`, { cache: 'no-store' })
-    ]);
-
-    if (!lessonsResponse.ok) {
-      throw new Error('Failed to fetch lessons');
+    const levelData = typedLevelsData.levels[difficultyId];
+    if (!levelData) {
+      console.warn(`No level data found for difficulty ${difficultyId}`);
+      return [];
     }
-
-    const lessons: LessonFromDB[] = await lessonsResponse.json();
-    const grammar: GrammarFromDB[] = grammarResponse.ok ? await grammarResponse.json() : [];
-    const vocabulary: VocabularyFromDB[] = vocabularyResponse.ok ? await vocabularyResponse.json() : [];
-
-    return lessons.map(lesson => ({
-      id: `lesson-${difficultyId}-${lesson.lesson_id}`,
-      number: lesson.order_num || lesson.lesson_id,
-      title: lesson.title,
-      description: lesson.description,
-      grammar: grammar
-        .filter(g => g.lesson_id === lesson.lesson_id)
-        .map(g => ({
-          id: `grammar-${g.grammar_id}`,
-          title: g.title,
-          description: g.description,
-          example: g.example,
-          translation: g.translation,
-          type: ['writing', 'speaking', 'common'].includes(g.type) 
-            ? g.type as 'writing' | 'speaking' | 'common' 
-            : 'common'
-        })),
-      vocabulary: vocabulary
-        .filter(v => v.lesson_id === lesson.lesson_id)
-        .map(v => ({
-          id: `vocab-${v.vocab_id}`,
-          word: v.word,
-          meaning: v.meaning,
-          context: v.context,
-          type: mapVocabType(v.type)
-        })),
-      exams: [] // Empty array for now since this function doesn't fetch exams
+    
+    // Transform the data to match the expected Lesson type
+    return levelData.lessons.map(lesson => ({
+      ...lesson,
+      grammar: lesson.grammar.map(g => ({
+        ...g,
+        type: ['writing', 'speaking', 'common'].includes(g.type) 
+          ? g.type as 'writing' | 'speaking' | 'common' 
+          : 'common' as const,
+        // Convert single example/translation to arrays for the Grammar component
+        examples: g.example ? [g.example] : [],
+        translations: g.translation ? [g.translation] : [],
+        // Split description into Korean and English parts
+        descriptionKorean: (() => {
+          const parts = g.description.split('.');
+          return parts[0] || g.description;
+        })(),
+        descriptionEnglish: (() => {
+          const parts = g.description.split('.');
+          if (parts.length > 1) {
+            return parts.slice(1).join('.').trim();
+          }
+          return '';
+        })(),
+        // Keep single values for backward compatibility
+        example: g.example,
+        translation: g.translation
+      })),
+      vocabulary: lesson.vocabulary.map(v => ({
+        ...v,
+        type: mapVocabType(v.type)
+      })),
+      summaries: lesson.summaries || []
     }));
   } catch (error) {
     console.error('Error fetching lessons:', error);
@@ -206,21 +252,50 @@ export async function fetchLessonsForDifficulty(difficultyId: string): Promise<L
 
 export async function fetchStudyLevel(difficultyId: string): Promise<StudyLevel | null> {
   try {
-    const [difficulties, lessons] = await Promise.all([
-      fetchDifficulties(),
-      fetchLessonsForDifficulty(difficultyId)
-    ]);
-
-    const difficulty = difficulties.find(d => d.id === difficultyId);
-    
-    if (!difficulty) {
+    const levelData = typedLevelsData.levels[difficultyId];
+    if (!levelData) {
+      console.warn(`No level data found for difficulty ${difficultyId}`);
       return null;
     }
-
+    
+    // Transform the data to match the expected types
+    const transformedLessons = levelData.lessons.map(lesson => ({
+      ...lesson,
+      grammar: lesson.grammar.map(g => ({
+        ...g,
+        type: ['writing', 'speaking', 'common'].includes(g.type) 
+          ? g.type as 'writing' | 'speaking' | 'common' 
+          : 'common' as const,
+        // Convert single example/translation to arrays for the Grammar component
+        examples: g.example ? [g.example] : [],
+        translations: g.translation ? [g.translation] : [],
+        // Split description into Korean and English parts
+        descriptionKorean: (() => {
+          const parts = g.description.split('.');
+          return parts[0] || g.description;
+        })(),
+        descriptionEnglish: (() => {
+          const parts = g.description.split('.');
+          if (parts.length > 1) {
+            return parts.slice(1).join('.').trim();
+          }
+          return '';
+        })(),
+        // Keep single values for backward compatibility
+        example: g.example,
+        translation: g.translation
+      })),
+      vocabulary: lesson.vocabulary.map(v => ({
+        ...v,
+        type: mapVocabType(v.type)
+      })),
+      summaries: lesson.summaries || []
+    }));
+    
     return {
-      title: difficulty.title,
-      description: difficulty.description,
-      lessons: lessons
+      title: levelData.title,
+      description: levelData.description,
+      lessons: transformedLessons
     };
   } catch (error) {
     console.error('Error fetching study level:', error);
@@ -231,16 +306,39 @@ export async function fetchStudyLevel(difficultyId: string): Promise<StudyLevel 
 // For backwards compatibility, create a mock-like structure
 export const createMockLevels = async (): Promise<Record<string, StudyLevel>> => {
   try {
-    const difficulties = await fetchDifficulties();
     const levels: Record<string, StudyLevel> = {};
-
-    for (const difficulty of difficulties) {
-      const studyLevel = await fetchStudyLevel(difficulty.id);
-      if (studyLevel) {
-        levels[difficulty.id] = studyLevel;
-      }
-    }
-
+    
+    Object.keys(typedLevelsData.levels).forEach(difficultyId => {
+      const levelData = typedLevelsData.levels[difficultyId];
+      
+      // Transform the data to match the expected types
+      const transformedLessons = levelData.lessons.map(lesson => ({
+        ...lesson,
+        grammar: lesson.grammar.map(g => ({
+          ...g,
+          type: ['writing', 'speaking', 'common'].includes(g.type) 
+            ? g.type as 'writing' | 'speaking' | 'common' 
+            : 'common' as const,
+          // Convert single example/translation to arrays for the Grammar component
+          examples: g.example ? [g.example] : [],
+          translations: g.translation ? [g.translation] : [],
+          // Keep single values for backward compatibility
+          example: g.example,
+          translation: g.translation
+        })),
+        vocabulary: lesson.vocabulary.map(v => ({
+          ...v,
+          type: mapVocabType(v.type)
+        }))
+      }));
+      
+      levels[difficultyId] = {
+        title: levelData.title,
+        description: levelData.description,
+        lessons: transformedLessons
+      };
+    });
+    
     return levels;
   } catch (error) {
     console.error('Error creating mock levels:', error);
@@ -262,17 +360,45 @@ function safeParseJSON(jsonString: string): string[] {
 // Function to fetch all lessons for a difficulty
 export async function fetchLessonsForDifficultyFromAPI(difficultyId: string): Promise<any[]> {
   try {
-    const response = await fetch(`/api/lessons/${difficultyId}`, {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch lessons for difficulty');
+    const levelData = typedLevelsData.levels[difficultyId];
+    if (!levelData) {
+      console.warn(`No level data found for difficulty ${difficultyId}`);
+      return [];
     }
     
-    const data = await response.json();
-    // The API returns an array of lesson objects with lesson_id, grammars, vocabs, exams
-    return Array.isArray(data) ? data : [];
+    // Transform the data to match the expected Lesson type
+    return levelData.lessons.map(lesson => ({
+      ...lesson,
+      grammar: lesson.grammar.map(g => ({
+        ...g,
+        type: ['writing', 'speaking', 'common'].includes(g.type) 
+          ? g.type as 'writing' | 'speaking' | 'common' 
+          : 'common' as const,
+        // Convert single example/translation to arrays for the Grammar component
+        examples: g.example ? [g.example] : [],
+        translations: g.translation ? [g.translation] : [],
+        // Split description into Korean and English parts
+        descriptionKorean: (() => {
+          const parts = g.description.split('.');
+          return parts[0] || g.description;
+        })(),
+        descriptionEnglish: (() => {
+          const parts = g.description.split('.');
+          if (parts.length > 1) {
+            return parts.slice(1).join('.').trim();
+          }
+          return '';
+        })(),
+        // Keep single values for backward compatibility
+        example: g.example,
+        translation: g.translation
+      })),
+      vocabulary: lesson.vocabulary.map(v => ({
+        ...v,
+        type: mapVocabType(v.type)
+      })),
+      summaries: lesson.summaries || []
+    }));
   } catch (error) {
     console.error('Error fetching lessons for difficulty:', error);
     return [];
@@ -282,58 +408,49 @@ export async function fetchLessonsForDifficultyFromAPI(difficultyId: string): Pr
 // Function to fetch specific lesson data from the API
 export async function fetchLessonData(difficultyId: string, lessonId: string): Promise<Lesson | null> {
   try {
-    const response = await fetch(`/api/lessons/${difficultyId}/${lessonId}`, {
-      cache: 'no-store'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch lesson data');
+    const levelData = typedLevelsData.levels[difficultyId];
+    if (!levelData) {
+      console.warn(`No level data found for difficulty ${difficultyId}`);
+      return null;
     }
     
-    const data: LessonApiResponse = await response.json();
+    const lesson = levelData.lessons.find((l: any) => l.id === `lesson-${difficultyId}-${lessonId}`);
+    if (!lesson) {
+      console.warn(`No lesson found with ID lesson-${difficultyId}-${lessonId}`);
+      return null;
+    }
     
-    // Transform the API response to match our frontend types
+    // Transform the data to match the expected Lesson type
     return {
-      id: `lesson-${difficultyId}-${lessonId}`,
-      number: lessonId === "1" ? 1 : parseInt(lessonId),
-      title: `Lesson ${lessonId}`, // You might want to get this from another API
-      grammar: data.grammars.map(g => {
-        const examples = safeParseJSON(g.example);
-        const translations = safeParseJSON(g.translation);
-        const descriptions = safeParseJSON(g.description);
-        
-                 return {
-           id: `grammar-${g.grammarId}`,
-           title: g.title,
-           description: descriptions.length > 0 ? descriptions[0] : g.description,
-           descriptionKorean: descriptions.length > 0 ? descriptions[0] : undefined,
-           descriptionEnglish: descriptions.length > 1 ? descriptions[1] : undefined,
-           examples: examples,
-           translations: translations,
-           // Keep single example/translation for backward compatibility
-           example: examples.length > 0 ? examples[0] : g.example,
-           translation: translations.length > 0 ? translations[0] : g.translation,
-           type: ['writing', 'speaking', 'common'].includes(g.type) 
-             ? g.type as 'writing' | 'speaking' | 'common' 
-             : 'common'
-         };
-      }),
-      vocabulary: data.vocabs.map(v => ({
-        id: `vocab-${v.vocabId}`,
-        word: v.word,
-        meaning: v.meaning,
-        context: v.context,
-        type: mapVocabType(v.type)
+      ...lesson,
+      grammar: lesson.grammar.map(g => ({
+        ...g,
+        type: ['writing', 'speaking', 'common'].includes(g.type) 
+          ? g.type as 'writing' | 'speaking' | 'common' 
+          : 'common' as const,
+        // Convert single example/translation to arrays for the Grammar component
+        examples: g.example ? [g.example] : [],
+        translations: g.translation ? [g.translation] : [],
+        // Split description into Korean and English parts
+        descriptionKorean: (() => {
+          const parts = g.description.split('.');
+          return parts[0] || g.description;
+        })(),
+        descriptionEnglish: (() => {
+          const parts = g.description.split('.');
+          if (parts.length > 1) {
+            return parts.slice(1).join('.').trim();
+          }
+          return '';
+        })(),
+        // Keep single values for backward compatibility
+        example: g.example,
+        translation: g.translation
       })),
-      exams: data.exams.map(e => {
-        const options = safeParseJSON(e.options);
-        return {
-          id: `exam-${e.examId}`,
-          question: e.question,
-          options: options,
-          correctAnswer: parseInt(e.correctAnswer)
-        };
-      })
+      vocabulary: lesson.vocabulary.map(v => ({
+        ...v,
+        type: mapVocabType(v.type)
+      }))
     };
   } catch (error) {
     console.error('Error fetching lesson data:', error);

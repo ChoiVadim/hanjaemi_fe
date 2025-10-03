@@ -3,6 +3,7 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { clearLocalChatData } from "@/lib/chat-utils";
+import { useTour } from "./tour-context";
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {

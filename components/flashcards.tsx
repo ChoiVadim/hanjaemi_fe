@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Repeat } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTour } from "@/components/context/tour-context";
 
 interface Flashcard {
   id: string;
@@ -50,6 +51,7 @@ export function Flashcards({
   const [activeTab, setActiveTab] = useState<"all" | "vocabulary" | "grammar">(
     "all"
   );
+  const { startTour } = useTour();
 
   const vocabularyCards: Flashcard[] =
     vocabulary?.map((item) => ({
@@ -150,7 +152,7 @@ export function Flashcards({
         }}
         className="w-[90%] max-w-[400px] mb-1"
       >
-        <TabsList className="grid grid-cols-3">
+        <TabsList data-tour="flashcard-tabs" className="grid grid-cols-3">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="vocabulary">Vocabulary</TabsTrigger>
           <TabsTrigger value="grammar">Grammar</TabsTrigger>
@@ -185,6 +187,7 @@ export function Flashcards({
 
       <div className="perspective-1000 w-[90%] max-w-[400px] mb-2">
         <Card
+          data-tour="flashcard-card"
           className={`w-full h-[260px] cursor-pointer card-flip border-2 ${
             isFlipped ? "flipped" : ""
           } dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 shadow-md dark:bg-card`}
@@ -213,7 +216,7 @@ export function Flashcards({
         </Card>
       </div>
 
-      <div className="flex gap-6 mt-1">
+      <div data-tour="flashcard-controls" className="flex gap-6 mt-1">
         <Button
           variant="outline"
           size="icon"

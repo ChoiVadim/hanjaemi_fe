@@ -12,6 +12,7 @@ import "highlight.js/styles/github-dark.css";
 import { Bot, User } from "lucide-react";
 import { useAuth } from "@/components/context/auth-context";
 import { clearLocalChatData, transformChatHistory } from "@/lib/chat-utils";
+import { useTour } from "@/components/context/tour-context";
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ export function Chat({
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const { backendData, loading: authLoading } = useAuth();
+  const { startTour } = useTour();
 
   // Clear any existing localStorage chat data on component mount
   useEffect(() => {
@@ -62,7 +64,24 @@ export function Chat({
         setMessages([
           {
             id: generateMessageId(),
-            content: "안녕하세요! 한국어 학습을 도와드리겠습니다. 궁금한 것이 있으면 언제든 물어보세요! 👋",
+            content: `Hello! I'm your Korean learning partner! 🎓
+
+**What I can help you with:**
+
+📚 **Grammar Explanations** - I'll explain complex Korean grammar in simple terms
+📖 **Vocabulary Learning** - Learn new words and how to use them properly
+💬 **Conversation Practice** - Practice natural Korean conversations
+✍️ **Writing Help** - Get assistance with sentences and essays
+🎯 **TOPIK Preparation** - Tips and practice for Korean proficiency test
+🇰🇷 **Culture Insights** - Learn about Korean culture and customs
+🔍 **Translation Support** - Help with Korean-English translations
+
+**How to use:**
+- Click on grammar or vocabulary items to automatically send questions
+- Type your questions directly to get answers
+- Type "help" anytime to get usage instructions
+
+Feel free to ask me anything! Let's improve your Korean together! 💪`,
             sender: "assistant",
           },
         ]);
@@ -178,7 +197,7 @@ export function Chat({
   return (
     <div className="flex flex-col h-full border rounded-lg">
       <ScrollArea className="flex-1 p-3">
-        <div className="space-y-4">
+        <div data-tour="chat-messages" className="space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -211,7 +230,7 @@ export function Chat({
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeHighlight]}
-                  className={`prose prose-sm max-w-none ${
+                  className={`prose prose-sm max-w-none font-sans ${
                     message.sender === "assistant"
                       ? "dark:prose-invert"
                       : "text-primary-foreground"
@@ -249,7 +268,10 @@ export function Chat({
                       return <pre className="p-0 m-0">{children}</pre>;
                     },
                     p: ({ children }: any) => {
-                      return <p className="mb-2 last:mb-0">{children}</p>;
+                      return <p className="mb-2 last:mb-0 font-sans whitespace-pre-line">{children}</p>;
+                    },
+                    br: () => {
+                      return <br />;
                     },
                     ul: ({ children }: any) => {
                       return (
@@ -303,6 +325,7 @@ export function Chat({
       </ScrollArea>
       <div className="flex gap-2 border-t p-2">
         <Input
+          data-tour="chat-input"
           placeholder="Type your message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -310,7 +333,12 @@ export function Chat({
           disabled={isLoading}
           className="h-9"
         />
-        <Button onClick={sendMessage} disabled={isLoading} className="h-9 px-3">
+        <Button 
+          data-tour="chat-send"
+          onClick={sendMessage} 
+          disabled={isLoading} 
+          className="h-9 px-3"
+        >
           Send
         </Button>
       </div>

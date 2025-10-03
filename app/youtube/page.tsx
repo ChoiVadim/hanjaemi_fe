@@ -100,6 +100,7 @@ export default function YouTubeAnalysis() {
 
   return (
     <div className="container mx-auto px-4 h-screen flex flex-col items-center justify-center">
+
       <div className="max-w-2xl mx-auto">
         <h1 className="mb-8 text-4xl font-bold text-center">
           What would you like to learn from?
@@ -109,6 +110,7 @@ export default function YouTubeAnalysis() {
             <Link2 className="h-5 w-5 text-muted-foreground" />
           </div>
           <Input
+            data-tour="youtube-input"
             className="pl-10 pr-20 h-14 text-lg bg-muted/40"
             placeholder="Paste YouTube video URL here..."
             value={videoUrl}
@@ -116,6 +118,7 @@ export default function YouTubeAnalysis() {
             onKeyDown={handleKeyDown}
           />
           <Button
+            data-tour="analyze-button"
             className="absolute right-2 top-2 bottom-2"
             onClick={handleAnalyze}
           >

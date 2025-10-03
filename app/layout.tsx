@@ -8,6 +8,8 @@ import { Lexend } from 'next/font/google';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AuthProvider } from "@/components/context/auth-context";
+import { TourProvider } from "@/components/context/tour-context";
+import { TourTrigger } from "@/components/tour-trigger";
 
 // Configure Lexend font
 const lexend = Lexend({ 
@@ -24,19 +26,22 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
         <AuthProvider>
-          <Toaster closeButton position="bottom-right" />
-            <div className="flex min-h-screen">
-              {showSidebar ? (
-                <SidebarProvider>
-                  <AppSidebar />
-                  <main className="flex-1">{children}</main>
-                </SidebarProvider>
-              ) : (
-                <div className="flex-1">
-                  <main>{children}</main>
-                </div>
-              )}
-            </div>
+          <TourProvider>
+            <TourTrigger />
+            <Toaster closeButton position="bottom-right" />
+              <div className="flex min-h-screen">
+                {showSidebar ? (
+                  <SidebarProvider>
+                    <AppSidebar />
+                    <main className="flex-1">{children}</main>
+                  </SidebarProvider>
+                ) : (
+                  <div className="flex-1">
+                    <main>{children}</main>
+                  </div>
+                )}
+              </div>
+          </TourProvider>
         </AuthProvider>
       </body>
     </html>

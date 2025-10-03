@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import Skeleton from "react-loading-skeleton";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 type VocabType = "important" | "common" | "new";
 
@@ -68,6 +69,7 @@ export function Vocabulary({
   data: VocabularyWord[];
   isLoading?: boolean;
 }) {
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   if (isLoading) {
     return (
       <ScrollArea
@@ -92,21 +94,41 @@ export function Vocabulary({
               const iconType =
                 word.type && typeIcons[word.type] ? word.type : "default";
               const Icon = typeIcons[iconType];
+              const isSelected = selectedWord === word.word;
+              
+              const handleClick = () => {
+                if (isSelected) {
+                  // Second click - send to chat
+                  onWordClick && onWordClick(word.word, word.timestamp);
+                } else {
+                  // First click - just select
+                  setSelectedWord(word.word);
+                }
+              };
+              
               return (
-                <Button
+                <div
                   key={word.id}
-                  variant="outline"
-                  className="w-full h-auto py-3 justify-start text-left hover:bg-muted cursor-pointer"
-                  onClick={() =>
-                    onWordClick && onWordClick(word.word, word.timestamp)
-                  }
-                  disabled={disabled}
+                  className={cn(
+                    "w-full h-auto py-3 px-3 border border-border rounded-md cursor-pointer transition-all duration-200",
+                    isSelected && "bg-slate-800 text-slate-50 border-slate-600"
+                  )}
+                  onClick={handleClick}
                 >
-                  <div className="flex items-start gap-4 w-full min-h-[32px]">
+                  <div className={cn(
+                    "flex items-start gap-4 w-full transition-all duration-200",
+                    isSelected ? "min-h-[60px]" : "min-h-[32px]"
+                  )}>
                     <Tooltip>
                       <TooltipTrigger>
-                        <div className="rounded-md bg-muted p-2 shrink-0">
-                          <Icon className="h-4 w-4" />
+                        <div className={cn(
+                          "rounded-md p-2 shrink-0 transition-colors duration-200",
+                          isSelected ? "bg-white" : "bg-muted"
+                        )}>
+                          <Icon className={cn(
+                            "h-4 w-4 transition-colors duration-200",
+                            isSelected ? "text-slate-800" : "text-muted-foreground"
+                          )} />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -120,17 +142,17 @@ export function Vocabulary({
                       <h3 className="font-semibold leading-none break-words">
                         {word.word}
                       </h3>
-                      <p className="text-sm text-muted-foreground whitespace-normal break-words">
+                      <p className="text-sm text-slate-300 whitespace-normal break-words">
                         {word.meaning}
                       </p>
                       {word.timestamp && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-slate-400">
                           Timestamp: {word.timestamp}
                         </p>
                       )}
                     </div>
                   </div>
-                </Button>
+                </div>
               );
             })}
           </div>
