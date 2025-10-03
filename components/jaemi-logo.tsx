@@ -21,7 +21,7 @@ export function JaemiLogo({ className, size = 48 }: JaemiLogoProps) {
   // 서버 사이드 렌더링 중이거나 마운트되지 않았을 때는 기본 로고 사용
   const logoSrc = mounted && resolvedTheme === "dark" 
     ? "/logo-dark.webp" 
-    : "/logo-light.webp";
+    : "/logo-light.png";
 
   return (
     <Image

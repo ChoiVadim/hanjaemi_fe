@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen } from "lucide-react";
+import { 
+  GraduationCap, 
+  Trophy, 
+  Target, 
+  Zap, 
+  Crown, 
+  Star,
+  ArrowRight,
+  CheckCircle
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 type Difficulty = {
@@ -18,32 +27,91 @@ export default async function StudyPage() {
   if (!res.ok) throw new Error("Failed to load difficulty list");
   const levels: Difficulty[] = await res.json();
 
+  // Define icons for each level
+  const getLevelIcon = (levelName: string) => {
+    const name = levelName.toLowerCase();
+    if (name.includes('beginner')) return GraduationCap;
+    if (name.includes('intermediate')) return Target;
+    if (name.includes('advanced')) return Crown;
+    return Star;
+  };
+
+  // Define colors for each level
+  const getLevelColor = (levelName: string) => {
+    return 'bg-black';
+  };
+
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-4">Choose Your Level</h1>
-        <p className="text-muted-foreground text-center mb-12">
-          Select the level that matches your current Korean proficiency
-        </p>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {levels.map((level) => (
-            <Link key={level.difficultyId} href={`/study/${level.difficultyId}`}>
-              <Card className="group transition-all hover:shadow-lg">
-                <CardContent className="aspect-square p-6 flex flex-col items-center justify-center text-center">
-                  <div className="mb-6 p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <BookOpen className="h-8 w-8 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-semibold mb-2">{level.name}</h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {level.description}
-                  </p>
-                  <Badge variant="secondary" className="text-sm">
-                    {`${level.lessonCount} ${level.lessonCount === 1 ? "lesson" : "lessons"}`}
-                  </Badge>
-                </CardContent>
-              </Card>
+    <div className="h-screen bg-gradient-to-br from-gray-50 to-white overflow-hidden">
+      <div className="h-full flex items-center justify-center px-8 py-8">
+        <div className="text-center">
+          {/* Header Section */}
+          <div className="mb-8">
+          
+            <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">
+              Choose Your Level
+            </h1>
+            <p className="text-sm text-gray-600 max-w-lg mx-auto">
+              Select the level that matches your current Korean proficiency
+            </p>
+          </div>
+
+          {/* Levels Grid */}
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto mb-8 px-4">
+            {levels.map((level, index) => {
+              const IconComponent = getLevelIcon(level.name);
+              const gradientClass = getLevelColor(level.name);
+              
+              return (
+                <Link key={level.difficultyId} href={`/study/${level.difficultyId}`}>
+                  <Card className="group relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-102 bg-white w-64 h-64">
+                    <CardContent className="p-6 h-full w-full flex flex-col items-center text-center justify-center">
+                      {/* Icon Section */}
+                      <div className="flex items-center justify-center mb-4">
+                        <div className={`p-3 rounded-xl ${gradientClass} shadow-sm group-hover:shadow-md transition-all duration-300`}>
+                          <IconComponent className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="flex flex-col items-center text-center space-y-3 px-3">
+                        <h2 className="text-lg font-bold text-black group-hover:text-gray-700 transition-colors">
+                          {level.name}
+                        </h2>
+                        <p className="text-base text-gray-600 leading-relaxed">
+                          {level.description}
+                        </p>
+                        
+                        {/* Lesson Count */}
+                        <div className="flex items-center justify-center mt-3">
+                          <Badge 
+                            variant="outline" 
+                            className="bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 transition-colors text-sm px-4 py-1.5"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            {`${level.lessonCount} ${level.lessonCount === 1 ? "lesson" : "lessons"}`}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Hover Effect Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-gray-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Bottom CTA */}
+          <div>
+            <Link href="/placement-test">
+              <button className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm">
+                Take a Placement Test
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </button>
             </Link>
-          ))}
+          </div>
         </div>
       </div>
     </div>

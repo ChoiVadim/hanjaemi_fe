@@ -125,7 +125,7 @@ export function AppSidebar() {
         >
           {open ? (
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-primary-foreground">
+              <div className="flex h-8 w-8 items-center justify-center">
                 <JaemiLogo size={28} />
               </div>
               <div className="flex flex-col text-left">
@@ -135,7 +135,7 @@ export function AppSidebar() {
             </Link>
           ) : (
             <Link href="/" className="flex items-center justify-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-primary text-primary-foreground">
+              <div className="flex h-10 w-10 items-center justify-center">
                 <JaemiLogo size={32} />
               </div>
             </Link>
@@ -163,14 +163,14 @@ export function AppSidebar() {
                         asChild
                         title={item.title}
                         className={cn(
-                          "transition-all duration-300 ease-in-out h-9 justify-start gap-2 px-3",
+                          "transition-all duration-300 ease-in-out h-9 justify-start gap-2 px-3 rounded-none border-0 outline-none shadow-none ring-0",
                           pathname === item.href
                             ? "bg-accent text-accent-foreground"
                             : "hover:bg-accent/50"
                         )}
                       >
                         <Link href={item.href} className="flex items-center">
-                          <item.icon className="shrink-0 h-4 w-4" />
+                          <item.icon className="shrink-0 h-4 w-4 border-0 outline-none shadow-none" />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -184,14 +184,14 @@ export function AppSidebar() {
                       key={item.title}
                       href={item.href}
                       className={cn(
-                        "h-10 w-10 flex items-center justify-center rounded-md transition-all duration-300 ease-in-out",
+                        "h-10 w-10 flex items-center justify-center rounded-none border-0 outline-none shadow-none ring-0 transition-all duration-300 ease-in-out",
                         pathname === item.href
                           ? "bg-accent text-accent-foreground"
                           : "hover:bg-accent/50"
                       )}
                       title={item.title}
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-5 w-5 border-0 outline-none shadow-none" />
                     </Link>
                   ))}
                 </div>
