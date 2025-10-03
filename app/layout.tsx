@@ -24,6 +24,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>HanJaemi - Korean Learning Platform</title>
+        <meta name="description" content="Learn Korean with AI-powered lessons, grammar explanations, and vocabulary practice" />
+        <link rel="icon" href="/jaemi-logo-dark.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/jaemi-logo-dark.svg" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body className={`${lexend.variable} font-sans antialiased`}>
         <AuthProvider>
           <TourProvider>

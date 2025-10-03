@@ -1,0 +1,31 @@
+{
+  "name": "HanJaemi - Korean Learning Platform",
+  "short_name": "HanJaemi",
+  "description": "Learn Korean with AI-powered lessons, grammar explanations, and vocabulary practice",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/jaemi-logo-dark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-dark.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/logo-dark.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ],
+  "categories": ["education", "language", "learning"],
+  "lang": "en",
+  "dir": "ltr"
+}
