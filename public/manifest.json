@@ -9,20 +9,20 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/jaemi-logo-dark.svg",
+      "src": "/logo-light.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-dark.webp",
+      "src": "/logo-light.png",
       "sizes": "192x192",
-      "type": "image/webp"
+      "type": "image/png"
     },
     {
-      "src": "/logo-dark.webp",
+      "src": "/logo-light.png",
       "sizes": "512x512",
-      "type": "image/webp"
+      "type": "image/png"
     }
   ],
   "categories": ["education", "language", "learning"],

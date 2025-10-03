@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: 'HanJaemi',
     images: [
       {
-        url: '/jaemi-logo-dark.svg',
+        url: '/logo-light.png',
         width: 1200,
         height: 630,
         alt: 'HanJaemi - Korean Learning Platform',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'HanJaemi - Korean Learning Platform',
     description: 'Learn Korean with AI-powered lessons, grammar explanations, and vocabulary practice.',
-    images: ['/jaemi-logo-dark.svg'],
+    images: ['/logo-light.png'],
   },
   robots: {
     index: true,
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/jaemi-logo-dark.svg',
-    shortcut: '/jaemi-logo-dark.svg',
-    apple: '/jaemi-logo-dark.svg',
+    icon: '/logo-light.png',
+    shortcut: '/logo-light.png',
+    apple: '/logo-light.png',
   },
   manifest: '/manifest.json',
 }
