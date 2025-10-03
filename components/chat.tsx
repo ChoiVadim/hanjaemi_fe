@@ -137,8 +137,22 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
 
   // Handle message sending
   const handleSubmit = async (message: string) => {
+    let assistantMessageId: string | null = null;
+    
     try {
       setIsLoading(true);
+      
+      // Create assistant message placeholder for streaming
+      assistantMessageId = generateMessageId();
+      const assistantMessage: Message = {
+        id: assistantMessageId,
+        content: "",
+        sender: "assistant",
+      };
+      
+      // Add the assistant message immediately to show it's being typed
+      setMessages((prev) => [...prev, assistantMessage]);
+
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -151,24 +165,63 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
               content: msg.content,
             })
           ),
+          stream: true, // Enable streaming
         }),
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to send message");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: generateMessageId(),
-          content: data.choices[0].message.content,
-          sender: "assistant",
-        },
-      ]);
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      if (reader) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") {
+                  break;
+                }
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.content) {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? { ...msg, content: msg.content + parsed.content }
+                          : msg
+                      )
+                    );
+                  }
+                } catch (e) {
+                  console.error("Error parsing streaming data:", e);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      }
     } catch (error) {
       console.error("Chat error:", error);
+      // Remove the assistant message if there was an error
+      if (assistantMessageId) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
+      }
       throw error; // Re-throw to handle in sendMessage
     } finally {
       setIsLoading(false);
@@ -304,22 +357,6 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
               </div>
             </div>
           ))}
-          {isLoading && (
-            <div className="flex items-start gap-3">
-              <Avatar className="bg-primary">
-                <AvatarFallback>
-                  <Bot className="h-4 w-4 text-primary-foreground" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="rounded-lg px-3 py-2 bg-muted">
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-[bounce_0.8s_infinite]" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-[bounce_0.8s_0.2s_infinite]" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-[bounce_0.8s_0.4s_infinite]" />
-                </div>
-              </div>
-            </div>
-          )}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>

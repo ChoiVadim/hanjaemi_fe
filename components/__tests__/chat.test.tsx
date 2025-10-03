@@ -10,7 +10,7 @@ jest.mock('@/components/context/auth-context', () => ({
 
 // Mock react-markdown and its dependencies
 jest.mock('react-markdown', () => (props) => {
-  return <>{props.children}</>;
+  return React.createElement(React.Fragment, null, props.children);
 });
 jest.mock('remark-gfm', () => () => {});
 jest.mock('rehype-highlight', () => () => {});
@@ -26,6 +26,12 @@ global.fetch = jest.fn(() =>
       Promise.resolve({
         choices: [{ message: { content: 'Hello there!' } }],
       }),
+    body: {
+      getReader: () => ({
+        read: () => Promise.resolve({ done: true }),
+        releaseLock: () => {},
+      }),
+    },
   })
 ) as jest.Mock;
 
@@ -64,6 +70,7 @@ describe('Chat component', () => {
     const fetchBody = JSON.parse((fetch as jest.Mock).mock.calls[1][1].body);
 
     expect(fetchBody.messages).toHaveLength(4);
+    expect(fetchBody.stream).toBe(true); // Check that streaming is enabled
     expect(fetchBody.messages[0].role).toBe('assistant');
     expect(fetchBody.messages[0].content).toBe('안녕하세요! 한국어 학습을 도와드리겠습니다. 궁금한 것이 있으면 언제든 물어보세요! 👋');
     expect(fetchBody.messages[1].role).toBe('user');
