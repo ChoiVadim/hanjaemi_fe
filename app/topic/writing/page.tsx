@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Clock, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Clock, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EvaluationResult {
@@ -20,6 +21,7 @@ interface EvaluationResult {
 }
 
 export default function WritingPracticePage() {
+  const router = useRouter();
   const [essay, setEssay] = useState("");
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
@@ -78,7 +80,17 @@ export default function WritingPracticePage() {
   }, [isTimerRunning]);
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+      <div className="flex items-center justify-between mb-2">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="h-8 px-2"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
+        </Button>
+      </div>
+
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Korean Writing Practice</h1>
         <p className="text-muted-foreground">
@@ -86,10 +98,10 @@ export default function WritingPracticePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
         {/* Writing Area */}
-        <div className="lg:col-span-2">
-          <Card>
+        <div className="lg:col-span-2 flex flex-col overflow-hidden">
+          <Card className="flex flex-col h-full overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -116,9 +128,9 @@ Please write your answer below; your answer must be between 600 and 700 characte
                 아래 빈칸에 600자에서 700자 이내로 작문하십시오 (띄어쓰기 포함).
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col overflow-hidden">
               {/* Exam-style grid background */}
-              <div className="relative">
+              <div className="relative flex-1 flex flex-col">
                 <div 
                   className="absolute inset-0 pointer-events-none opacity-10"
                   style={{
@@ -133,7 +145,7 @@ Please write your answer below; your answer must be between 600 and 700 characte
                   value={essay}
                   onChange={(e) => setEssay(e.target.value)}
                   placeholder="Write your Korean essay here..."
-                  className="min-h-[500px] resize-none font-mono leading-relaxed bg-transparent relative z-10"
+                  className="flex-1 resize-none font-mono leading-relaxed bg-transparent relative z-10 min-h-0"
                   style={{
                     lineHeight: '25px',
                     fontSize: '14px'
@@ -177,7 +189,7 @@ Please write your answer below; your answer must be between 600 and 700 characte
         </div>
 
         {/* Evaluation Results */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-auto">
           {evaluation ? (
             <>
               {/* Score Card */}

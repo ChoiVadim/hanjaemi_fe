@@ -217,3 +217,6 @@ function MyComponent() {
 7. **Responsive**: Works perfectly on all device sizes
 
 The complete tour system provides an exceptional onboarding experience that helps users understand and utilize all features of the HanJaemi Korean learning platform effectively.
+
+
+

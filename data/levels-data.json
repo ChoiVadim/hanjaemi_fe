@@ -127,56 +127,136 @@
               "word": "학생",
               "meaning": "student",
               "context": "Self-introduction",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-248",
               "word": "선생님",
               "meaning": "teacher",
               "context": "Addressing politely",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-249",
               "word": "책",
               "meaning": "book",
               "context": "Study and reading",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-250",
               "word": "교실",
               "meaning": "classroom",
               "context": "School locations",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "교실이 넓어요.",
+                "학생들이 교실에 있어요.",
+                "교실에서 공부해요."
+              ],
+              "translations": [
+                "The classroom is spacious.",
+                "The students are in the classroom.",
+                "We study in the classroom."
+              ]
             },
             {
               "id": "vocab-251",
               "word": "방",
               "meaning": "room",
               "context": "Describing a room",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "방이 깨끗해요.",
+                "제 방에서 공부해요.",
+                "큰 방이 필요해요."
+              ],
+              "translations": [
+                "The room is clean.",
+                "I study in my room.",
+                "I need a big room."
+              ]
             },
             {
               "id": "vocab-252",
               "word": "학교",
               "meaning": "school",
               "context": "Locations and institutions",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "학교에 가요.",
+                "학교에서 친구를 만나요.",
+                "우리 학교는 커요."
+              ],
+              "translations": [
+                "I go to school.",
+                "I meet friends at school.",
+                "Our school is big."
+              ]
             },
             {
               "id": "vocab-253",
               "word": "서점",
               "meaning": "bookstore",
               "context": "Shops in town",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "서점에서 책을 사요.",
+                "서점이 어디에 있어요?",
+                "서점에 가고 싶어요."
+              ],
+              "translations": [
+                "I buy books at the bookstore.",
+                "Where is the bookstore?",
+                "I want to go to the bookstore."
+              ]
             },
             {
               "id": "vocab-254",
               "word": "도서관",
               "meaning": "library",
               "context": "Places on campus",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "도서관에서 공부해요.",
+                "도서관이 조용해요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "I study at the library.",
+                "The library is quiet.",
+                "There are many books in the library."
+              ]
             }
           ],
           "exams": [
@@ -329,7 +409,17 @@
               "word": "물",
               "meaning": "water",
               "context": "Ordering drinks",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-256",
@@ -350,14 +440,34 @@
               "word": "밥",
               "meaning": "rice/meal",
               "context": "Meals and eating",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-552",
               "word": "책",
               "meaning": "book",
               "context": "책이 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-553",
@@ -538,14 +648,34 @@
               "word": "학생",
               "meaning": "student",
               "context": "저도 학생이에요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-559",
               "word": "밥",
               "meaning": "meal",
               "context": "밥을 먹고 집에 가요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             }
           ],
           "exams": [
@@ -733,7 +863,17 @@
               "word": "선생님",
               "meaning": "teacher",
               "context": "선생님이세요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             }
           ],
           "exams": [
@@ -907,14 +1047,34 @@
               "word": "친구",
               "meaning": "friend",
               "context": "Talking about people",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "친구와 놀아요.",
+                "좋은 친구예요.",
+                "친구를 만나요."
+              ],
+              "translations": [
+                "I play with my friend.",
+                "He/She is a good friend.",
+                "I meet my friend."
+              ]
             },
             {
               "id": "vocab-571",
               "word": "집",
               "meaning": "home",
               "context": "집에서 학교까지.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             }
           ],
           "exams": [
@@ -1074,28 +1234,68 @@
               "word": "시간",
               "meaning": "time",
               "context": "Time references",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "시간이 없어요.",
+                "몇 시예요?",
+                "시간을 잘 써요."
+              ],
+              "translations": [
+                "I don't have time.",
+                "What time is it?",
+                "I use time well."
+              ]
             },
             {
               "id": "vocab-574",
               "word": "학생",
               "meaning": "student",
               "context": "공부하는 학생.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-575",
               "word": "밥",
               "meaning": "meal",
               "context": "밥을 먹으면서 TV를 봐요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-576",
               "word": "친구",
               "meaning": "friend",
               "context": "친구가 가고 싶어 해요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "친구와 놀아요.",
+                "좋은 친구예요.",
+                "친구를 만나요."
+              ],
+              "translations": [
+                "I play with my friend.",
+                "He/She is a good friend.",
+                "I meet my friend."
+              ]
             }
           ],
           "exams": [
@@ -1341,7 +1541,17 @@
               "word": "밥",
               "meaning": "meal",
               "context": "밥을 안 먹어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-581",
@@ -1522,7 +1732,17 @@
               "word": "책",
               "meaning": "book",
               "context": "책을 읽고 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-586",
@@ -1701,7 +1921,17 @@
               "word": "공부",
               "meaning": "study",
               "context": "Study plans and routines",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-105",
@@ -1785,7 +2015,17 @@
               "word": "학생",
               "meaning": "student",
               "context": "Identity",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             }
           ],
           "exams": [
@@ -1925,14 +2165,34 @@
               "word": "학생",
               "meaning": "student",
               "context": "Self-introduction",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-114",
               "word": "도서관",
               "meaning": "library",
               "context": "Places on campus",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "도서관에서 공부해요.",
+                "도서관이 조용해요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "I study at the library.",
+                "The library is quiet.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-115",
@@ -1946,7 +2206,17 @@
               "word": "선생님",
               "meaning": "teacher",
               "context": "Addressing politely",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-117",
@@ -2171,7 +2441,17 @@
               "word": "교실",
               "meaning": "classroom",
               "context": "School locations",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "교실이 넓어요.",
+                "학생들이 교실에 있어요.",
+                "교실에서 공부해요."
+              ],
+              "translations": [
+                "The classroom is spacious.",
+                "The students are in the classroom.",
+                "We study in the classroom."
+              ]
             },
             {
               "id": "vocab-128",
@@ -2199,7 +2479,17 @@
               "word": "방",
               "meaning": "room",
               "context": "Describing a room",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "방이 깨끗해요.",
+                "제 방에서 공부해요.",
+                "큰 방이 필요해요."
+              ],
+              "translations": [
+                "The room is clean.",
+                "I study in my room.",
+                "I need a big room."
+              ]
             },
             {
               "id": "vocab-132",
@@ -2248,14 +2538,34 @@
               "word": "크다",
               "meaning": "big",
               "context": "Descriptive adjective",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "집이 커요.",
+                "학교가 커요.",
+                "나무가 커요."
+              ],
+              "translations": [
+                "The house is big.",
+                "The school is big.",
+                "The tree is big."
+              ]
             },
             {
               "id": "vocab-341",
               "word": "작다",
               "meaning": "small",
               "context": "Descriptive adjective",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "방이 작아요.",
+                "아이가 작아요.",
+                "차가 작아요."
+              ],
+              "translations": [
+                "The room is small.",
+                "The child is small.",
+                "The car is small."
+              ]
             }
           ],
           "exams": [
@@ -2403,7 +2713,17 @@
               "word": "친구",
               "meaning": "friend",
               "context": "Talking about people",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "친구와 놀아요.",
+                "좋은 친구예요.",
+                "친구를 만나요."
+              ],
+              "translations": [
+                "I play with my friend.",
+                "He/She is a good friend.",
+                "I meet my friend."
+              ]
             },
             {
               "id": "vocab-140",
@@ -2417,14 +2737,34 @@
               "word": "책",
               "meaning": "book",
               "context": "Study and reading",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-143",
               "word": "물",
               "meaning": "water",
               "context": "Ordering drinks",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-144",
@@ -2438,7 +2778,17 @@
               "word": "학교",
               "meaning": "school",
               "context": "Locations and institutions",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "학교에 가요.",
+                "학교에서 친구를 만나요.",
+                "우리 학교는 커요."
+              ],
+              "translations": [
+                "I go to school.",
+                "I meet friends at school.",
+                "Our school is big."
+              ]
             },
             {
               "id": "vocab-147",
@@ -2587,7 +2937,17 @@
               "word": "시간",
               "meaning": "time",
               "context": "Availability/existence",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "시간이 없어요.",
+                "몇 시예요?",
+                "시간을 잘 써요."
+              ],
+              "translations": [
+                "I don't have time.",
+                "What time is it?",
+                "I use time well."
+              ]
             },
             {
               "id": "vocab-150",
@@ -2636,35 +2996,85 @@
               "word": "있다",
               "meaning": "exist",
               "context": "Existence expressions",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 있어요.",
+                "친구가 있어요.",
+                "시간이 있어요."
+              ],
+              "translations": [
+                "I'm at home.",
+                "I have a friend.",
+                "I have time."
+              ]
             },
             {
               "id": "vocab-348",
               "word": "없다",
               "meaning": "not exist",
               "context": "Existence expressions",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 없어요.",
+                "친구가 없어요.",
+                "시간이 없어요."
+              ],
+              "translations": [
+                "I'm not at home.",
+                "I don't have a friend.",
+                "I don't have time."
+              ]
             },
             {
               "id": "vocab-349",
               "word": "집",
               "meaning": "house",
               "context": "Location context",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             },
             {
               "id": "vocab-350",
               "word": "학교",
               "meaning": "school",
               "context": "Location context",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "학교에 가요.",
+                "학교에서 친구를 만나요.",
+                "우리 학교는 커요."
+              ],
+              "translations": [
+                "I go to school.",
+                "I meet friends at school.",
+                "Our school is big."
+              ]
             },
             {
               "id": "vocab-351",
               "word": "방",
               "meaning": "room",
               "context": "Location context",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "방이 깨끗해요.",
+                "제 방에서 공부해요.",
+                "큰 방이 필요해요."
+              ],
+              "translations": [
+                "The room is clean.",
+                "I study in my room.",
+                "I need a big room."
+              ]
             }
           ],
           "exams": [
@@ -2785,7 +3195,17 @@
               "word": "집",
               "meaning": "home/house",
               "context": "Destinations",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             },
             {
               "id": "vocab-162",
@@ -2841,14 +3261,34 @@
               "word": "가다",
               "meaning": "go",
               "context": "Motion verbs",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "학교에 가요.",
+                "집에 가요.",
+                "친구에게 가요."
+              ],
+              "translations": [
+                "I go to school.",
+                "I go home.",
+                "I go to my friend."
+              ]
             },
             {
               "id": "vocab-353",
               "word": "오다",
               "meaning": "come",
               "context": "Motion verbs",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "여기에 와요.",
+                "친구가 와요.",
+                "언제 와요?"
+              ],
+              "translations": [
+                "I come here.",
+                "My friend comes.",
+                "When do you come?"
+              ]
             },
             {
               "id": "vocab-355",
@@ -2981,7 +3421,17 @@
               "word": "밥",
               "meaning": "rice/meal",
               "context": "Eating and cooking",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-176",
@@ -2995,7 +3445,17 @@
               "word": "만들다",
               "meaning": "to make",
               "context": "Cooking or creating",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "음식을 만들어요.",
+                "친구를 만들어요.",
+                "계획을 만들어요."
+              ],
+              "translations": [
+                "I make food.",
+                "I make friends.",
+                "I make plans."
+              ]
             },
             {
               "id": "vocab-384",
@@ -3016,7 +3476,17 @@
               "word": "공부",
               "meaning": "study",
               "context": "학교에서 공부해요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             }
           ],
           "exams": [
@@ -3337,7 +3807,17 @@
               "word": "말하다",
               "meaning": "to speak",
               "context": "Requesting speech",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "한국어로 말해요.",
+                "친구와 말해요.",
+                "진실을 말해요."
+              ],
+              "translations": [
+                "I speak Korean.",
+                "I talk with my friend.",
+                "I tell the truth."
+              ]
             },
             {
               "id": "vocab-198",
@@ -3393,7 +3873,17 @@
               "word": "물",
               "meaning": "water",
               "context": "Polite requests",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-439",
@@ -3505,7 +3995,17 @@
               "word": "읽다",
               "meaning": "to read",
               "context": "Abilities",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "책을 읽어요.",
+                "신문을 읽어요.",
+                "글을 읽어요."
+              ],
+              "translations": [
+                "I read books.",
+                "I read newspapers.",
+                "I read text."
+              ]
             },
             {
               "id": "vocab-214",
@@ -3540,7 +4040,17 @@
               "word": "시간",
               "meaning": "time",
               "context": "Availability",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "시간이 없어요.",
+                "몇 시예요?",
+                "시간을 잘 써요."
+              ],
+              "translations": [
+                "I don't have time.",
+                "What time is it?",
+                "I use time well."
+              ]
             },
             {
               "id": "vocab-399",
@@ -3720,7 +4230,17 @@
               "word": "학생",
               "meaning": "student",
               "context": "Reported statements",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-278",
@@ -3908,14 +4428,34 @@
               "word": "책",
               "meaning": "book",
               "context": "Choice expressions",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-283",
               "word": "물",
               "meaning": "water",
               "context": "At least expressions",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-284",
@@ -4125,7 +4665,17 @@
               "word": "공부",
               "meaning": "study",
               "context": "Because (negative)",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-289",
@@ -4139,7 +4689,17 @@
               "word": "먹다",
               "meaning": "eat",
               "context": "While eating",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있게 먹어요.",
+                "함께 먹어요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "I eat deliciously.",
+                "I eat together."
+              ]
             },
             {
               "id": "vocab-291",
@@ -4167,7 +4727,17 @@
               "word": "밥",
               "meaning": "meal",
               "context": "밥을 먹다 흘렸어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-601",
@@ -4335,7 +4905,17 @@
               "word": "학생",
               "meaning": "student",
               "context": "Guessing identity",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-293",
@@ -4538,7 +5118,17 @@
               "word": "싸다",
               "meaning": "cheap",
               "context": "Contrast statements",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "옷이 싸요.",
+                "음식이 싸요.",
+                "차가 싸요."
+              ],
+              "translations": [
+                "The clothes are cheap.",
+                "The food is cheap.",
+                "The car is cheap."
+              ]
             },
             {
               "id": "vocab-298",
@@ -4573,14 +5163,34 @@
               "word": "밥",
               "meaning": "meal",
               "context": "밥은 고사하고 물도 못 마셨어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-608",
               "word": "물",
               "meaning": "water",
               "context": "밥은 고사하고 물도 못 마셨어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-610",
@@ -4755,14 +5365,34 @@
               "word": "친구",
               "meaning": "friend",
               "context": "Heard from friend",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "친구와 놀아요.",
+                "좋은 친구예요.",
+                "친구를 만나요."
+              ],
+              "translations": [
+                "I play with my friend.",
+                "He/She is a good friend.",
+                "I meet my friend."
+              ]
             },
             {
               "id": "vocab-303",
               "word": "선생님",
               "meaning": "teacher",
               "context": "Reported question",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-304",
@@ -5168,7 +5798,17 @@
               "word": "물",
               "meaning": "water",
               "context": "At least option",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-315",
@@ -5371,14 +6011,34 @@
               "word": "쉽다",
               "meaning": "easy",
               "context": "Thought it was easy",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "문제가 쉬워요.",
+                "일이 쉬워요.",
+                "한국어가 쉬워요."
+              ],
+              "translations": [
+                "The problem is easy.",
+                "The work is easy.",
+                "Korean is easy."
+              ]
             },
             {
               "id": "vocab-321",
               "word": "하다",
               "meaning": "do",
               "context": "Can/cannot do",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "일을 해요.",
+                "공부를 해요.",
+                "운동을 해요."
+              ],
+              "translations": [
+                "I work.",
+                "I study.",
+                "I exercise."
+              ]
             },
             {
               "id": "vocab-628",
@@ -5574,28 +6234,68 @@
               "word": "공부",
               "meaning": "study",
               "context": "Change/result expressions",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-324",
               "word": "먹다",
               "meaning": "eat",
               "context": "After eating result",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있게 먹어요.",
+                "함께 먹어요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "I eat deliciously.",
+                "I eat together."
+              ]
             },
             {
               "id": "vocab-325",
               "word": "밥",
               "meaning": "meal",
               "context": "Eating while actions",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-326",
               "word": "학교",
               "meaning": "school",
               "context": "On the way to school",
-              "type": "common"
+              "type": "common",
+              "examples": [
+                "학교에 가요.",
+                "학교에서 친구를 만나요.",
+                "우리 학교는 커요."
+              ],
+              "translations": [
+                "I go to school.",
+                "I meet friends at school.",
+                "Our school is big."
+              ]
             },
             {
               "id": "vocab-632",
@@ -5865,7 +6565,17 @@
               "word": "공부",
               "meaning": "study",
               "context": "열심히 하다 보면 잘할 수 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-499",
@@ -6235,7 +6945,17 @@
               "word": "공부",
               "meaning": "study",
               "context": "공부하다 보니 재미있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-509",
@@ -6417,7 +7137,17 @@
               "word": "물",
               "meaning": "water",
               "context": "물을 떠다 주세요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             },
             {
               "id": "vocab-513",
@@ -6613,7 +7343,17 @@
               "word": "학생",
               "meaning": "student",
               "context": "학생치고 공부 안 하는 사람 없다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-519",
@@ -6816,14 +7556,34 @@
               "word": "집",
               "meaning": "home",
               "context": "집만 못해요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             },
             {
               "id": "vocab-526",
               "word": "선생님",
               "meaning": "teacher",
               "context": "선생님으로서 책임이 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             }
           ],
           "exams": [
@@ -7179,7 +7939,17 @@
               "word": "책",
               "meaning": "book",
               "context": "책뿐만 아니라 신문도 읽어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-535",
@@ -7193,7 +7963,17 @@
               "word": "물",
               "meaning": "water",
               "context": "물밖에 없어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "물을 마셔요.",
+                "물이 차가워요.",
+                "물이 필요해요."
+              ],
+              "translations": [
+                "I drink water.",
+                "The water is cold.",
+                "I need water."
+              ]
             }
           ],
           "exams": [
@@ -7375,7 +8155,17 @@
               "word": "책",
               "meaning": "book",
               "context": "책을 읽곤 했다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-541",
@@ -7543,14 +8333,34 @@
               "word": "학생",
               "meaning": "student",
               "context": "학생뿐인가? 선생님도 있다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-543",
               "word": "선생님",
               "meaning": "teacher",
               "context": "학생뿐인가? 선생님도 있다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-544",
@@ -8044,7 +8854,17 @@
               "word": "책",
               "meaning": "book",
               "context": "책 및 참고 자료를 준비하세요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             },
             {
               "id": "vocab-646",
@@ -8260,14 +9080,34 @@
               "word": "학생",
               "meaning": "student",
               "context": "이번 할인은 학생에 한하여 적용된다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-648",
               "word": "선생님",
               "meaning": "teacher",
               "context": "선생님이 학생의 성장에 중요한 역할을 한다.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-649",
@@ -9062,7 +9902,17 @@
               "word": "집",
               "meaning": "home",
               "context": "그는 집에 오자 샤워했어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             },
             {
               "id": "vocab-455",
@@ -9369,7 +10219,17 @@
               "word": "밥",
               "meaning": "meal",
               "context": "밥을 먹고서는 바로 뛰면 안 돼요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-464",
@@ -9519,7 +10379,17 @@
               "word": "선생님",
               "meaning": "teacher",
               "context": "선생님더러 전해 달라 했어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-468",
@@ -9533,7 +10403,17 @@
               "word": "밥",
               "meaning": "meal",
               "context": "밥은 고사하고 물도 못 마셨어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "밥을 먹어요.",
+                "맛있는 밥이에요.",
+                "밥을 요리해요."
+              ],
+              "translations": [
+                "I eat rice/meal.",
+                "It's delicious food.",
+                "I cook rice/meal."
+              ]
             },
             {
               "id": "vocab-470",
@@ -9547,7 +10427,17 @@
               "word": "책",
               "meaning": "book",
               "context": "책을 읽는다든지 운동을 한다든지 해요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "이 책은 재미있어요.",
+                "책을 읽고 있어요.",
+                "도서관에 책이 많아요."
+              ],
+              "translations": [
+                "This book is interesting.",
+                "I am reading a book.",
+                "There are many books in the library."
+              ]
             }
           ],
           "exams": [
@@ -9697,7 +10587,17 @@
               "word": "집",
               "meaning": "home",
               "context": "집에 가던 차에 들렀어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "집에 가요.",
+                "집이 커요.",
+                "집에서 쉬어요."
+              ],
+              "translations": [
+                "I go home.",
+                "The house is big.",
+                "I rest at home."
+              ]
             },
             {
               "id": "vocab-476",
@@ -9990,7 +10890,17 @@
               "word": "학생",
               "meaning": "student",
               "context": "학생인지라 돈이 없어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-483",
@@ -10147,28 +11057,68 @@
               "word": "학생",
               "meaning": "student",
               "context": "학생뿐인가요? 선생님도 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "저는 학생이에요.",
+                "학생들이 교실에 있어요.",
+                "그 학생은 한국어를 공부해요."
+              ],
+              "translations": [
+                "I am a student.",
+                "The students are in the classroom.",
+                "That student studies Korean."
+              ]
             },
             {
               "id": "vocab-488",
               "word": "선생님",
               "meaning": "teacher",
               "context": "학생뿐인가요? 선생님도 있어요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "선생님, 안녕하세요.",
+                "우리 선생님은 친절해요.",
+                "선생님이 교실에 계세요."
+              ],
+              "translations": [
+                "Hello, teacher.",
+                "Our teacher is kind.",
+                "The teacher is in the classroom."
+              ]
             },
             {
               "id": "vocab-489",
               "word": "공부",
               "meaning": "study",
               "context": "공부하랴 일하랴 바빠요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "공부를 해요.",
+                "열심히 공부해요.",
+                "공부가 어려워요."
+              ],
+              "translations": [
+                "I study.",
+                "I study hard.",
+                "Studying is difficult."
+              ]
             },
             {
               "id": "vocab-490",
               "word": "일",
               "meaning": "work",
               "context": "공부하랴 일하랴 바빠요.",
-              "type": "important"
+              "type": "important",
+              "examples": [
+                "일을 해요.",
+                "일이 많아요.",
+                "일을 끝내요."
+              ],
+              "translations": [
+                "I work.",
+                "There's a lot of work.",
+                "I finish work."
+              ]
             },
             {
               "id": "vocab-491",

@@ -80,7 +80,12 @@ export default function HomePage() {
             <Button size="lg" asChild className="bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg">
               <Link href="/register">Try Free - No Credit Card</Link>
             </Button>
-            <Button variant="outline" size="lg" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105"
+              onClick={() => window.open('https://www.youtube.com/watch?v=k5q51895MiQ', '_blank')}
+            >
               <Play className="mr-2 h-5 w-5" />
               See How It Works
             </Button>
@@ -246,7 +251,12 @@ export default function HomePage() {
             <Button size="lg" asChild className="bg-white text-black hover:bg-gray-100 px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105">
               <Link href="/register">Start Your Breakthrough Today</Link>
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white bg-white text-black px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-white text-white bg-white text-black px-8 py-4 text-lg font-medium transition-all duration-300 hover:scale-105"
+              onClick={() => window.open('https://www.youtube.com/watch?v=k5q51895MiQ', '_blank')}
+            >
               <ArrowRight className="mr-2 h-5 w-5" />
               Learn More
             </Button>

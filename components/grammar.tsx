@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Skeleton from "react-loading-skeleton";
-import { cn } from "@/lib/utils";
+import { cn, formatTimestamp } from "@/lib/utils";
 import { useState } from "react";
 
 type GrammarType = "writing" | "speaking" | "common";
@@ -64,12 +64,14 @@ export function GrammarLoading() {
 function GrammarRuleItem({
   rule,
   onGrammarClick,
+  onTimestampClick,
   disabled,
   isSelected,
   onSelect,
 }: {
   rule: GrammarRule;
   onGrammarClick: (grammar: string, timestamp?: string) => void;
+  onTimestampClick?: (timestamp: string) => void;
   disabled?: boolean;
   isSelected: boolean;
   onSelect: (grammar: string) => void;
@@ -136,21 +138,30 @@ function GrammarRuleItem({
           {/* Display both Korean and English descriptions */}
           {rule.descriptionKorean && rule.descriptionEnglish ? (
             <div className="space-y-1">
-              <p className="text-sm text-slate-200 whitespace-normal break-words">
+              <p className={cn(
+                "text-sm whitespace-normal break-words",
+                isSelected ? "text-slate-200" : "text-slate-600"
+              )}>
                 🇰🇷 {rule.descriptionKorean}
               </p>
-              <p className="text-sm text-slate-300 whitespace-normal break-words">
+              <p className={cn(
+                "text-sm whitespace-normal break-words",
+                isSelected ? "text-slate-300" : "text-slate-500"
+              )}>
                 🇬🇧 {rule.descriptionEnglish}
               </p>
             </div>
           ) : (
-            <p className="text-sm text-slate-300 whitespace-normal break-words">
+            <p className={cn(
+              "text-sm whitespace-normal break-words",
+              isSelected ? "text-slate-300" : "text-slate-600"
+            )}>
               {rule.description}
             </p>
           )}
           
           {/* Display examples only when selected */}
-          {isSelected && rule.examples && rule.examples.length > 0 && (
+          {isSelected && (rule.examples && rule.examples.length > 0) && (
             <div className="space-y-1">
               <p className="text-xs font-medium text-slate-300">Examples:</p>
               <div className="space-y-1">
@@ -180,9 +191,34 @@ function GrammarRuleItem({
             </div>
           )}
           
+          {/* Display single example and translation if no examples array */}
+          {isSelected && (!rule.examples || rule.examples.length === 0) && rule.example && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-slate-300">Example:</p>
+              <div className="text-xs bg-slate-700/50 border border-slate-600/50 p-3 rounded-md">
+                <p className="font-medium text-slate-100">{rule.example}</p>
+                {rule.translation && (
+                  <p className="text-slate-300 mt-1">{rule.translation}</p>
+                )}
+              </div>
+            </div>
+          )}
+          
           {rule.timestamp && (
             <p className="text-xs text-slate-400">
-              Timestamp: {rule.timestamp}
+              Timestamp: {onTimestampClick ? (
+                <button
+                  className="text-blue-400 hover:text-blue-300 underline cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTimestampClick(rule.timestamp!);
+                  }}
+                >
+                  {formatTimestamp(rule.timestamp)}
+                </button>
+              ) : (
+                formatTimestamp(rule.timestamp)
+              )}
             </p>
           )}
         </div>
@@ -195,6 +231,7 @@ export function Grammar({
   type,
   id,
   onGrammarClick,
+  onTimestampClick,
   disabled,
   data,
   isLoading,
@@ -202,6 +239,7 @@ export function Grammar({
   type: string;
   id: string;
   onGrammarClick: (grammar: string, timestamp?: string) => void;
+  onTimestampClick?: (timestamp: string) => void;
   disabled?: boolean;
   data: GrammarRule[];
   isLoading?: boolean;
@@ -232,6 +270,7 @@ export function Grammar({
                 key={rule.id}
                 rule={rule}
                 onGrammarClick={onGrammarClick}
+                onTimestampClick={onTimestampClick}
                 disabled={disabled}
                 isSelected={selectedGrammar === rule.title}
                 onSelect={setSelectedGrammar}

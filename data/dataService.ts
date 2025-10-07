@@ -31,6 +31,8 @@ type LevelsData = {
         meaning: string;
         context: string;
         type: string;
+        examples?: string[];
+        translations?: string[];
       }>;
       exams: Array<{
         id: string;
@@ -165,6 +167,8 @@ export type Vocabulary = {
   meaning: string;
   context?: string;
   type?: 'important' | 'common' | 'new';
+  examples?: string[];
+  translations?: string[];
 };
 
 export type StudyLevel = {

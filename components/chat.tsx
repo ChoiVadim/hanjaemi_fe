@@ -72,9 +72,6 @@ export function Chat({
 📖 **Vocabulary Learning** - Learn new words and how to use them properly
 💬 **Conversation Practice** - Practice natural Korean conversations
 ✍️ **Writing Help** - Get assistance with sentences and essays
-🎯 **TOPIK Preparation** - Tips and practice for Korean proficiency test
-🇰🇷 **Culture Insights** - Learn about Korean culture and customs
-🔍 **Translation Support** - Help with Korean-English translations
 
 **How to use:**
 - Click on grammar or vocabulary items to automatically send questions

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Slider } from "@/components/ui/slider";
 import {
+  ArrowLeft,
   Headphones,
   Play,
   Pause,
@@ -26,6 +28,7 @@ import {
 } from "@/data/topikListeningQuestions";
 
 export default function ListeningPracticePage() {
+  const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -183,9 +186,19 @@ export default function ListeningPracticePage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
       {/* Hidden audio element */}
       <audio ref={audioRef} src={currentQuestion.audioUrl} preload="metadata" />
+
+      <div className="flex items-center justify-between mb-2">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="h-8 px-2"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
+        </Button>
+      </div>
 
       {/* Header */}
       <div className="mb-6">
@@ -224,10 +237,10 @@ export default function ListeningPracticePage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
         {/* Question Area */}
-        <div className="lg:col-span-2">
-          <Card>
+        <div className="lg:col-span-2 flex flex-col overflow-hidden">
+          <Card className="flex flex-col h-full overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -244,7 +257,7 @@ export default function ListeningPracticePage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 flex-1 overflow-auto">
               {/* Audio Player */}
               <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <h3 className="font-medium mb-4 flex items-center gap-2">
@@ -416,7 +429,7 @@ export default function ListeningPracticePage() {
         </div>
 
         {/* Feedback Area */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-auto">
           {/* Answer Explanation */}
           {showAnswer && (
             <Card>

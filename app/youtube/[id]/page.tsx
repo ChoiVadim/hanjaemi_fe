@@ -13,6 +13,7 @@ import { Summary } from "@/components/summary";
 import { Test } from "@/components/exam";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertCircle, FileX } from "lucide-react";
+import { convertTimestampToSeconds } from "@/lib/utils";
 import "react-loading-skeleton/dist/skeleton.css";
 
 export default function StudyPage({
@@ -26,7 +27,8 @@ export default function StudyPage({
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
-  const videoRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
+  const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const [studyData, setStudyData] = useState<{
     grammar: any[];
     vocabulary: any[];
@@ -41,13 +43,49 @@ export default function StudyPage({
     }
   }, [type, id]);
 
+  // Initialize YouTube player
+  useEffect(() => {
+    const initializePlayer = () => {
+      console.log('Initializing YouTube player for video ID:', id);
+      if (window.YT && videoRef.current) {
+        const player = new window.YT.Player('youtube-player', {
+          videoId: id,
+          width: '100%',
+          height: '100%',
+          playerVars: {
+            enablejsapi: 1,
+            origin: window.location.origin,
+          },
+          events: {
+            onReady: () => {
+              console.log('YouTube player ready!');
+              setYoutubePlayer(player);
+            },
+            onError: (event: any) => {
+              console.error('YouTube player error:', event);
+            },
+          },
+        });
+      } else {
+        console.log('YouTube API not ready or videoRef not available');
+      }
+    };
+
+    if (window.YT) {
+      initializePlayer();
+    } else {
+      console.log('YouTube API not loaded, setting up callback');
+      window.onYouTubeIframeAPIReady = initializePlayer;
+    }
+  }, [id]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         setNoSubtitles(false);
         const response = await fetch(
-          `http://localhost:8000/api/grammar-and-vocabulary/${id}`
+          `${process.env.NEXT_PUBLIC_YT_API_URL || 'https://backend-fastapi-94xx.onrender.com'}/api/grammar-and-vocabulary/${id}`
         );
 
         if (!response.ok) {
@@ -66,7 +104,35 @@ export default function StudyPage({
         }
 
         const data = await response.json();
-        setStudyData(data);
+        
+        // Transform YouTube API data to match component expectations
+        const transformedData = {
+          grammar: data.grammar?.map((item: any) => ({
+            id: item.id || item.grammar_id?.toString() || Math.random().toString(),
+            title: item.title,
+            description: item.description,
+            descriptionKorean: item.descriptionKorean,
+            descriptionEnglish: item.descriptionEnglish,
+            example: item.example,
+            examples: item.example ? [item.example] : item.examples || [],
+            translation: item.translation,
+            translations: item.translation ? [item.translation] : item.translations || [],
+            type: item.type || item.difficulty || 'common',
+            timestamp: item.timestamp
+          })) || [],
+          vocabulary: data.vocabulary?.map((item: any) => ({
+            id: item.id || item.vocab_id?.toString() || Math.random().toString(),
+            word: item.word,
+            meaning: item.meaning,
+            context: item.context,
+            type: item.type || 'common',
+            timestamp: item.timestamp,
+            examples: item.examples || [],
+            translations: item.translations || []
+          })) || []
+        };
+        
+        setStudyData(transformedData);
       } catch (error) {
         console.error(error);
         setError("Failed to load study data");
@@ -94,21 +160,13 @@ export default function StudyPage({
       setTimeout(() => {
         setSelectedGrammar(grammar);
         setActiveTab("chat");
-        if (timestamp && videoRef.current) {
+        if (timestamp && youtubePlayer) {
           const seconds = convertTimestampToSeconds(timestamp);
-          const iframe = videoRef.current as HTMLIFrameElement & {
-            contentWindow: {
-              postMessage: (message: any, target: string) => void;
-            };
-          };
-          iframe.contentWindow.postMessage(
-            { event: "command", func: "seekTo", args: [seconds] },
-            "*"
-          );
+          youtubePlayer.seekTo(seconds, true);
         }
       }, 0);
     },
-    [isChatLoading]
+    [isChatLoading, youtubePlayer]
   );
 
   const handleWordClick = useCallback(
@@ -118,27 +176,30 @@ export default function StudyPage({
       setTimeout(() => {
         setSelectedWord(word);
         setActiveTab("chat");
-        if (timestamp && videoRef.current) {
+        if (timestamp && youtubePlayer) {
           const seconds = convertTimestampToSeconds(timestamp);
-          const iframe = videoRef.current as HTMLIFrameElement & {
-            contentWindow: {
-              postMessage: (message: any, target: string) => void;
-            };
-          };
-          iframe.contentWindow.postMessage(
-            { event: "command", func: "seekTo", args: [seconds] },
-            "*"
-          );
+          youtubePlayer.seekTo(seconds, true);
         }
       }, 0);
     },
-    [isChatLoading]
+    [isChatLoading, youtubePlayer]
   );
 
-  const convertTimestampToSeconds = (timestamp: string): number => {
-    const [minutes, seconds] = timestamp.split(":").map(Number);
-    return minutes * 60 + seconds;
-  };
+  const handleTimestampClick = useCallback(
+    (timestamp: string) => {
+      console.log('Timestamp clicked:', timestamp);
+      console.log('YouTube player:', youtubePlayer);
+      if (youtubePlayer) {
+        const seconds = convertTimestampToSeconds(timestamp);
+        console.log('Seeking to seconds:', seconds);
+        youtubePlayer.seekTo(seconds, true);
+      } else {
+        console.log('YouTube player not ready');
+      }
+    },
+    [youtubePlayer]
+  );
+
 
   return (
     <div className="container mx-auto p-6 flex flex-col h-[calc(100vh-2rem)]">
@@ -182,6 +243,7 @@ export default function StudyPage({
                     type={type}
                     id={id}
                     onGrammarClick={handleGrammarClick}
+                    onTimestampClick={handleTimestampClick}
                     disabled={isChatLoading}
                     data={studyData?.grammar || []}
                     isLoading={isLoading}
@@ -192,6 +254,7 @@ export default function StudyPage({
                     type={type}
                     id={id}
                     onWordClick={handleWordClick}
+                    onTimestampClick={handleTimestampClick}
                     disabled={isChatLoading}
                     data={studyData?.vocabulary || []}
                     isLoading={isLoading}

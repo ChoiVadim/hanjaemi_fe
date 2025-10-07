@@ -160,3 +160,6 @@ Update tour content in the `tourConfigs` object:
 - Lucide React for icons
 
 The implementation is complete and ready for use! Users can now take guided tours through the application to better understand its features and navigation.
+
+
+

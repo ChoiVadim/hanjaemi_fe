@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  ArrowLeft,
   BookOpen,
   CheckCircle,
   XCircle,
@@ -21,6 +23,7 @@ import {
 } from "@/data/topikReadingQuestions";
 
 export default function ReadingPracticePage() {
+  const router = useRouter();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -109,7 +112,17 @@ export default function ReadingPracticePage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+      <div className="flex items-center justify-between mb-2">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="h-8 px-2"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" /> Back
+        </Button>
+      </div>
+
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">TOPIK Reading Practice</h1>
@@ -148,10 +161,10 @@ export default function ReadingPracticePage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
         {/* Question Area */}
-        <div className="lg:col-span-2">
-          <Card>
+        <div className="lg:col-span-2 flex flex-col overflow-hidden">
+          <Card className="flex flex-col h-full overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -168,7 +181,7 @@ export default function ReadingPracticePage() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 flex-1 overflow-auto">
               {/* Passage (if exists) */}
               {currentQuestion.passage && (
                 <div className="p-4 bg-gray-50 rounded-lg">
@@ -274,7 +287,7 @@ export default function ReadingPracticePage() {
         </div>
 
         {/* Feedback Area */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-auto">
           {/* Answer Explanation */}
           {showAnswer && (
             <Card>
