@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
-import { Bot, User } from "lucide-react";
+import { Bot, User, AlertTriangle, Crown } from "lucide-react";
 import { useAuth } from "@/components/context/auth-context";
 import { clearLocalChatData, transformChatHistory } from "@/lib/chat-utils";
 import { useTour } from "@/components/context/tour-context";
@@ -18,6 +19,18 @@ interface Message {
   id: string;
   content: string;
   sender: "user" | "assistant";
+}
+
+interface UsageLimitError {
+  error: string;
+  usage?: {
+    dailyUsage: number;
+    monthlyUsage: number;
+    dailyLimit: number;
+    monthlyLimit: number;
+    remainingDaily: number;
+    remainingMonthly: number;
+  };
 }
 
 const generateMessageId = () => {
@@ -39,6 +52,7 @@ export function Chat({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [usageError, setUsageError] = useState<UsageLimitError | null>(null);
   const { backendData, loading: authLoading } = useAuth();
   const { startTour } = useTour();
 
@@ -168,6 +182,20 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Check if it's a usage limit error
+        if (response.status === 429 && errorData.error === "Usage limit exceeded") {
+          setUsageError(errorData);
+          // Add a system message about the limit
+          const limitMessage: Message = {
+            id: generateMessageId(),
+            content: "🚫 **Usage Limit Reached**\n\nYou've reached your daily or monthly request limit. Please upgrade your plan to continue chatting!",
+            sender: "assistant",
+          };
+          setMessages((prev) => [...prev, limitMessage]);
+          return;
+        }
+        
         throw new Error(errorData.error || "Failed to send message");
       }
 
@@ -244,8 +272,34 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
     }
   };
 
+  const clearUsageError = () => {
+    setUsageError(null);
+  };
+
   return (
     <div className="flex flex-col h-full border rounded-lg">
+      {/* Usage Limit Alert */}
+      {usageError && (
+        <Alert className="m-3 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800 dark:text-amber-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Usage Limit Reached!</strong>
+                <p className="text-sm mt-1">
+                  Daily: {usageError.usage?.dailyUsage || 0}/{usageError.usage?.dailyLimit || 0} | 
+                  Monthly: {usageError.usage?.monthlyUsage || 0}/{usageError.usage?.monthlyLimit || 0}
+                </p>
+              </div>
+              <Button size="sm" className="ml-4" onClick={clearUsageError}>
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <ScrollArea className="flex-1 p-3">
         <div data-tour="chat-messages" className="space-y-4">
           {messages.map((message) => (
@@ -360,20 +414,20 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
       <div className="flex gap-2 border-t p-2">
         <Input
           data-tour="chat-input"
-          placeholder="Type your message..."
+          placeholder={usageError ? "Upgrade to continue chatting..." : "Type your message..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !isLoading && sendMessage()}
-          disabled={isLoading}
+          onKeyDown={(e) => e.key === "Enter" && !isLoading && !usageError && sendMessage()}
+          disabled={isLoading || !!usageError}
           className="h-9"
         />
         <Button 
           data-tour="chat-send"
           onClick={sendMessage} 
-          disabled={isLoading} 
+          disabled={isLoading || !!usageError} 
           className="h-9 px-3"
         >
-          Send
+          {usageError ? <Crown className="h-4 w-4" /> : "Send"}
         </Button>
       </div>
     </div>

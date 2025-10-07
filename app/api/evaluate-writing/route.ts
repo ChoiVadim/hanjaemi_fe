@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { serverUserService } from "@/lib/services/serverUserService";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,6 +8,18 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
+    // Check usage limits before processing
+    const usageLimits = await serverUserService.checkUsageLimits();
+    if (!usageLimits.canMakeRequest) {
+      return NextResponse.json(
+        { 
+          error: "Usage limit exceeded",
+          usage: usageLimits
+        },
+        { status: 429 }
+      );
+    }
+
     const { essay } = await request.json();
 
     if (!essay || typeof essay !== "string") {
@@ -99,6 +112,9 @@ Please respond in English.
         Math.min(50, evaluationResult.score)
       );
     }
+
+    // Increment usage after successful completion
+    await serverUserService.incrementUsage('chat');
 
     return NextResponse.json(evaluationResult);
   } catch (error) {

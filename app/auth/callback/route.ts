@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { serverUserService } from "@/lib/services/serverUserService";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -52,6 +53,38 @@ export async function GET(request: NextRequest) {
     });
 
     if (!exchangeError) {
+      // Get user data after successful authentication
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        try {
+          // Check if user profile exists using service role
+          const { data: existingProfile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError && profileError.code === 'PGRST116') {
+            // Profile doesn't exist, create it
+            console.log("Creating new user profile for:", user.email);
+            await serverUserService.createUserProfile({
+              email: user.email || '',
+              full_name: user.user_metadata?.full_name || user.user_metadata?.name,
+              preferred_language: 'en',
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            });
+          } else if (profileError) {
+            console.error("Error checking profile:", profileError);
+          } else {
+            console.log("User profile already exists");
+          }
+        } catch (profileError) {
+          console.error("Error creating user profile:", profileError);
+          // Don't fail the auth flow if profile creation fails
+        }
+      }
+
       const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
 

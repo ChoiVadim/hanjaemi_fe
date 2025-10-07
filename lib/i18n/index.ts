@@ -115,6 +115,40 @@ export interface TranslationKeys {
   'error.notFound': string;
   'error.server': string;
   'error.usageLimit': string;
+
+  // Progress
+  'progress.title': string;
+  'progress.currentLevel': string;
+  'progress.streak': string;
+  'progress.days': string;
+  'progress.studyTime': string;
+  'progress.statistics': string;
+  'progress.lessonsCompleted': string;
+  'progress.grammarPoints': string;
+  'progress.vocabularyWords': string;
+  'progress.achievements': string;
+
+  // Settings
+  'settings.title': string;
+  'settings.notifications': string;
+  'settings.notificationsDescription': string;
+  'settings.enableNotifications': string;
+  'settings.enableNotificationsDescription': string;
+  'settings.emailNotifications': string;
+  'settings.emailNotificationsDescription': string;
+  'settings.studyReminders': string;
+  'settings.studyRemindersDescription': string;
+  'settings.learningPreferences': string;
+  'settings.learningPreferencesDescription': string;
+  'settings.difficultyPreference': string;
+  'settings.difficulty.easy': string;
+  'settings.difficulty.medium': string;
+  'settings.difficulty.hard': string;
+  'settings.difficulty.adaptive': string;
+  'settings.studyGoal': string;
+  'settings.minutesPerDay': string;
+  'settings.saving': string;
+  'settings.save': string;
 }
 
 const translations: Record<SupportedLanguage, TranslationKeys> = {
@@ -229,7 +263,41 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'error.forbidden': 'You don\'t have permission to access this.',
     'error.notFound': 'The requested resource was not found.',
     'error.server': 'Server error. Please try again later.',
-    'error.usageLimit': 'You\'ve reached your usage limit. Please upgrade your plan.'
+    'error.usageLimit': 'You\'ve reached your usage limit. Please upgrade your plan.',
+
+    // Progress
+    'progress.title': 'Learning Progress',
+    'progress.currentLevel': 'Current Level',
+    'progress.streak': 'Study Streak',
+    'progress.days': 'days',
+    'progress.studyTime': 'Total Study Time',
+    'progress.statistics': 'Statistics',
+    'progress.lessonsCompleted': 'Lessons Completed',
+    'progress.grammarPoints': 'Grammar Points',
+    'progress.vocabularyWords': 'Vocabulary Words',
+    'progress.achievements': 'Achievements',
+
+    // Settings
+    'settings.title': 'Settings',
+    'settings.notifications': 'Notifications',
+    'settings.notificationsDescription': 'Configure how you want to receive notifications',
+    'settings.enableNotifications': 'Enable Notifications',
+    'settings.enableNotificationsDescription': 'Receive notifications about your learning progress',
+    'settings.emailNotifications': 'Email Notifications',
+    'settings.emailNotificationsDescription': 'Receive updates via email',
+    'settings.studyReminders': 'Study Reminders',
+    'settings.studyRemindersDescription': 'Get reminded to study daily',
+    'settings.learningPreferences': 'Learning Preferences',
+    'settings.learningPreferencesDescription': 'Customize your learning experience',
+    'settings.difficultyPreference': 'Difficulty Preference',
+    'settings.difficulty.easy': 'Easy',
+    'settings.difficulty.medium': 'Medium',
+    'settings.difficulty.hard': 'Hard',
+    'settings.difficulty.adaptive': 'Adaptive',
+    'settings.studyGoal': 'Daily Study Goal',
+    'settings.minutesPerDay': 'minutes per day',
+    'settings.saving': 'Saving...',
+    'settings.save': 'Save Settings'
   },
 
   ru: {
@@ -343,7 +411,41 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'error.forbidden': 'У вас нет прав доступа к этому.',
     'error.notFound': 'Запрашиваемый ресурс не найден.',
     'error.server': 'Ошибка сервера. Попробуйте позже.',
-    'error.usageLimit': 'Вы достигли лимита использования. Обновите план.'
+    'error.usageLimit': 'Вы достигли лимита использования. Обновите план.',
+
+    // Progress
+    'progress.title': 'Прогресс обучения',
+    'progress.currentLevel': 'Текущий уровень',
+    'progress.streak': 'Серия занятий',
+    'progress.days': 'дней',
+    'progress.studyTime': 'Общее время изучения',
+    'progress.statistics': 'Статистика',
+    'progress.lessonsCompleted': 'Завершено уроков',
+    'progress.grammarPoints': 'Грамматические пункты',
+    'progress.vocabularyWords': 'Словарные слова',
+    'progress.achievements': 'Достижения',
+
+    // Settings
+    'settings.title': 'Настройки',
+    'settings.notifications': 'Уведомления',
+    'settings.notificationsDescription': 'Настройте получение уведомлений',
+    'settings.enableNotifications': 'Включить уведомления',
+    'settings.enableNotificationsDescription': 'Получать уведомления о прогрессе обучения',
+    'settings.emailNotifications': 'Email уведомления',
+    'settings.emailNotificationsDescription': 'Получать обновления по email',
+    'settings.studyReminders': 'Напоминания об учебе',
+    'settings.studyRemindersDescription': 'Получать ежедневные напоминания об учебе',
+    'settings.learningPreferences': 'Предпочтения обучения',
+    'settings.learningPreferencesDescription': 'Настройте свой опыт обучения',
+    'settings.difficultyPreference': 'Предпочтение сложности',
+    'settings.difficulty.easy': 'Легкий',
+    'settings.difficulty.medium': 'Средний',
+    'settings.difficulty.hard': 'Сложный',
+    'settings.difficulty.adaptive': 'Адаптивный',
+    'settings.studyGoal': 'Ежедневная цель изучения',
+    'settings.minutesPerDay': 'минут в день',
+    'settings.saving': 'Сохранение...',
+    'settings.save': 'Сохранить настройки'
   },
 };
 

@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "db:test": "node scripts/test-db-integration.js",
+    "db:init": "node scripts/init-database.js",
+    "db:test-user": "node scripts/test-user-creation.js",
+    "db:check": "node scripts/check-db-status.js",
+    "db:create-profile": "node scripts/create-existing-user-profile.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -46,6 +51,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-react": "8.5.1",
     "highlight.js": "^11.11.1",
     "input-otp": "1.4.1",

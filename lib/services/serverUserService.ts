@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/client';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServiceSupabaseClient } from '@/lib/supabase/server';
 import {
   UserProfile,
   UserSubscription,
@@ -16,9 +17,13 @@ import {
   SupportedLanguage
 } from '@/lib/types/database';
 
-export class UserService {
+export class ServerUserService {
   private getSupabase() {
-    return createClient();
+    return createServerSupabaseClient();
+  }
+
+  private getServiceSupabase() {
+    return createServiceSupabaseClient();
   }
 
   // User Profile Management
@@ -36,7 +41,9 @@ export class UserService {
         timezone: data.timezone || 'UTC'
       };
 
-      const { data: profile, error } = await supabase
+      // Use service role for creating profile to bypass RLS
+      const serviceSupabase = this.getServiceSupabase();
+      const { data: profile, error } = await serviceSupabase
         .from('user_profiles')
         .insert(profileData)
         .select()
@@ -44,13 +51,13 @@ export class UserService {
 
       if (error) throw error;
 
-      // Create default subscription
+      // Create default subscription using service role
       await this.createDefaultSubscription(user.user.id);
       
-      // Create default settings
+      // Create default settings using service role
       await this.createDefaultSettings(user.user.id);
       
-      // Create learning progress
+      // Create learning progress using service role
       await this.createLearningProgress(user.user.id);
 
       return profile;
@@ -103,8 +110,8 @@ export class UserService {
 
   // Subscription Management
   private async createDefaultSubscription(userId: string): Promise<void> {
-    const supabase = this.getSupabase();
-    const { error } = await supabase
+    const serviceSupabase = this.getServiceSupabase();
+    const { error } = await serviceSupabase
       .from('user_subscriptions')
       .insert({
         user_id: userId,
@@ -209,8 +216,8 @@ export class UserService {
 
   // Learning Progress
   private async createLearningProgress(userId: string): Promise<void> {
-    const supabase = this.getSupabase();
-    const { error } = await supabase
+    const serviceSupabase = this.getServiceSupabase();
+    const { error } = await serviceSupabase
       .from('user_learning_progress')
       .insert({
         user_id: userId,
@@ -311,8 +318,8 @@ export class UserService {
 
   // Settings
   private async createDefaultSettings(userId: string): Promise<void> {
-    const supabase = this.getSupabase();
-    const { error } = await supabase
+    const serviceSupabase = this.getServiceSupabase();
+    const { error } = await serviceSupabase
       .from('user_settings')
       .insert({
         user_id: userId,
@@ -434,4 +441,4 @@ export class UserService {
   }
 }
 
-export const userService = new UserService();
+export const serverUserService = new ServerUserService();

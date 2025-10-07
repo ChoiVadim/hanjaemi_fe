@@ -119,6 +119,12 @@ export function UsageLimits() {
               <Crown className="h-4 w-4" />
               {t('usage.upgrade')}
             </CardTitle>
+            <CardDescription className="text-xs text-amber-700 dark:text-amber-300">
+              {!usage.canMakeRequest 
+                ? "You've reached your limit. Upgrade to continue learning!"
+                : "You're approaching your limit. Consider upgrading for unlimited access."
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             <Button size="sm" className="w-full">

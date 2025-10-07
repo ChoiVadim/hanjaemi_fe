@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { serverUserService } from "@/lib/services/serverUserService";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -14,8 +15,20 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Check usage limits before processing
+    const usageLimits = await serverUserService.checkUsageLimits();
+    if (!usageLimits.canMakeRequest) {
+      return NextResponse.json(
+        { 
+          error: "Usage limit exceeded",
+          usage: usageLimits
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
-    const { stream = false } = body;
+    const { stream = false, sessionId } = body;
 
     if (stream) {
       // Streaming response
@@ -39,6 +52,17 @@ export async function POST(req: Request) {
             }
             controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
             controller.close();
+            
+            // Increment usage after successful completion
+            await serverUserService.incrementUsage('chat');
+            
+            // Save chat history if sessionId provided
+            if (sessionId && body.messages?.length > 0) {
+              const lastUserMessage = body.messages[body.messages.length - 1];
+              if (lastUserMessage.role === 'user') {
+                await serverUserService.saveChatMessage(sessionId, 'user', lastUserMessage.content);
+              }
+            }
           } catch (error) {
             console.error("Streaming error:", error);
             controller.error(error);
@@ -60,6 +84,17 @@ export async function POST(req: Request) {
         messages: body.messages,
         max_tokens: 1000,
       });
+
+      // Increment usage after successful completion
+      await serverUserService.incrementUsage('chat');
+      
+      // Save chat history if sessionId provided
+      if (sessionId && body.messages?.length > 0) {
+        const lastUserMessage = body.messages[body.messages.length - 1];
+        if (lastUserMessage.role === 'user') {
+          await serverUserService.saveChatMessage(sessionId, 'user', lastUserMessage.content);
+        }
+      }
 
       return NextResponse.json(completion);
     }
