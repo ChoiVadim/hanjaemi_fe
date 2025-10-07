@@ -1,5 +1,7 @@
 // Internationalization (i18n) system for HanJaemi
-import { SupportedLanguage } from '@/lib/types/database';
+import { useState, useEffect } from 'react';
+
+export type SupportedLanguage = 'en' | 'ru';
 
 export interface TranslationKeys {
   // Navigation
@@ -27,6 +29,31 @@ export interface TranslationKeys {
   'common.close': string;
   'common.yes': string;
   'common.no': string;
+  'common.hello': string;
+  'common.home': string;
+  'common.learning': string;
+  'common.youtube': string;
+  'common.chat': string;
+  'common.flashcards': string;
+  'common.summary': string;
+  'common.test': string;
+  'common.grammar': string;
+  'common.vocabulary': string;
+  'common.upgradeToPro': string;
+  'common.account': string;
+  'common.billing': string;
+  'common.notifications': string;
+  'common.logout': string;
+  'common.usage': string;
+  'common.dailyRequests': string;
+  'common.monthlyRequests': string;
+  'common.remaining': string;
+  'common.used': string;
+  'common.unlimited': string;
+  'common.platform': string;
+  'common.chatHistory': string;
+  'common.noChatHistory': string;
+  'common.startConversation': string;
 
   // Homepage
   'home.title': string;
@@ -117,6 +144,31 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'common.close': 'Close',
     'common.yes': 'Yes',
     'common.no': 'No',
+    'common.hello': 'Hello',
+    'common.home': 'Home',
+    'common.learning': 'Learning',
+    'common.youtube': 'YouTube',
+    'common.chat': 'Chat',
+    'common.flashcards': 'Flashcards',
+    'common.summary': 'Summary',
+    'common.test': 'Test',
+    'common.grammar': 'Grammar',
+    'common.vocabulary': 'Vocabulary',
+    'common.upgradeToPro': 'Upgrade to Pro',
+    'common.account': 'Account',
+    'common.billing': 'Billing',
+    'common.notifications': 'Notifications',
+    'common.logout': 'Log out',
+    'common.usage': 'Usage',
+    'common.dailyRequests': 'Daily Requests',
+    'common.monthlyRequests': 'Monthly Requests',
+    'common.remaining': 'Remaining',
+    'common.used': 'Used',
+    'common.unlimited': 'Unlimited',
+    'common.platform': 'Platform',
+    'common.chatHistory': 'Chat History',
+    'common.noChatHistory': 'No chat history yet',
+    'common.startConversation': 'Start a conversation to see history',
 
     // Homepage
     'home.title': 'Stop Struggling with Boring Korean Textbooks',
@@ -206,50 +258,75 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'common.close': 'Закрыть',
     'common.yes': 'Да',
     'common.no': 'Нет',
+    'common.hello': 'Привет',
+    'common.home': 'Главная',
+    'common.learning': 'Обучение',
+    'common.youtube': 'YouTube',
+    'common.chat': 'Чат',
+    'common.flashcards': 'Флэшкарты',
+    'common.summary': 'Сводка',
+    'common.test': 'Тест',
+    'common.grammar': 'Грамматика',
+    'common.vocabulary': 'Словарь',
+    'common.upgradeToPro': 'Обновить до Pro',
+    'common.account': 'Аккаунт',
+    'common.billing': 'Оплата',
+    'common.notifications': 'Уведомления',
+    'common.logout': 'Выйти',
+    'common.usage': 'Использование',
+    'common.dailyRequests': 'Ежедневные запросы',
+    'common.monthlyRequests': 'Ежемесячные запросы',
+    'common.remaining': 'Осталось',
+    'common.used': 'Использовано',
+    'common.unlimited': 'Безлимитно',
+    'common.platform': 'Платформа',
+    'common.chatHistory': 'История чата',
+    'common.noChatHistory': 'Истории чата пока нет',
+    'common.startConversation': 'Начните разговор, чтобы увидеть историю',
 
     // Homepage
     'home.title': 'Хватит мучиться со скучными учебниками корейского',
     'home.subtitle': 'Начни учиться с HanJaemi',
     'home.description': 'Наконец-то платформа для изучения корейского, которая действительно мотивирует учиться с геймифицированными уроками, настоящими K-драмами и AI-репетитором, который всегда доступен.',
-    'home.cta.start': 'Попробовать бесплатно',
-    'home.cta.learn': 'Как это работает',
+    'home.cta.start': 'Попробовать бесплатно - без карты',
+    'home.cta.learn': 'Посмотреть как это работает',
 
     // Study
     'study.title': 'Учеба',
     'study.grammar': 'Грамматика',
     'study.vocabulary': 'Словарь',
     'study.chat': 'Чат',
-    'study.flashcards': 'Карточки',
-    'study.summary': 'Резюме',
+    'study.flashcards': 'Флэшкарты',
+    'study.summary': 'Сводка',
     'study.test': 'Тест',
 
     // Chat
     'chat.title': 'Чат с AI-репетитором',
-    'chat.placeholder': 'Спроси меня что-нибудь о корейском...',
+    'chat.placeholder': 'Спроси меня что угодно о корейском...',
     'chat.send': 'Отправить',
-    'chat.welcome': 'Привет! Я твой партнер по изучению корейского! 🎓',
+    'chat.welcome': 'Привет! Я твой партнер по изучению корейского языка! 🎓',
     'chat.help.grammar': 'Объяснения грамматики - Я объясню сложную корейскую грамматику простыми словами',
-    'chat.help.vocabulary': 'Изучение слов - Изучай новые слова и их правильное использование',
-    'chat.help.conversation': 'Практика разговора - Практикуй естественные корейские диалоги',
-    'chat.help.writing': 'Помощь в письме - Получай помощь с предложениями и эссе',
-    'chat.help.topik': 'Подготовка к TOPIK - Советы и практика для экзамена на знание корейского',
-    'chat.help.culture': 'Культурные знания - Изучай корейскую культуру и обычаи',
-    'chat.help.translation': 'Помощь с переводом - Помощь с переводом между корейским и английским',
+    'chat.help.vocabulary': 'Изучение слов - Изучай новые слова и как их правильно использовать',
+    'chat.help.conversation': 'Практика разговора - Практикуй естественные корейские разговоры',
+    'chat.help.writing': 'Помощь в написании - Получи помощь с предложениями и эссе',
+    'chat.help.topik': 'Подготовка к TOPIK - Советы и практика для экзамена по корейскому языку',
+    'chat.help.culture': 'Культурные особенности - Узнай о корейской культуре и обычаях',
+    'chat.help.translation': 'Поддержка перевода - Помощь с корейско-английскими переводами',
 
     // Usage limits
-    'usage.daily.limit': 'Дневной лимит',
-    'usage.monthly.limit': 'Месячный лимит',
+    'usage.daily.limit': 'Ежедневный лимит',
+    'usage.monthly.limit': 'Ежемесячный лимит',
     'usage.remaining': 'осталось',
     'usage.exceeded': 'Превышен лимит использования',
-    'usage.upgrade': 'Обновите план для продолжения',
+    'usage.upgrade': 'Обновите для продолжения',
 
     // Progress
     'progress.level': 'Уровень',
-    'progress.lessons': 'Уроков пройдено',
+    'progress.lessons': 'Уроков завершено',
     'progress.grammar': 'Грамматических правил изучено',
     'progress.vocabulary': 'Слов изучено',
     'progress.streak': 'Дней подряд',
-    'progress.studyTime': 'Общее время учебы',
+    'progress.studyTime': 'Общее время изучения',
 
     // Settings
     'settings.title': 'Настройки',
@@ -257,68 +334,55 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'settings.notifications': 'Уведомления',
     'settings.email': 'Email уведомления',
     'settings.reminders': 'Напоминания об учебе',
-    'settings.difficulty': 'Предпочтительная сложность',
-    'settings.goal': 'Дневная цель учебы',
+    'settings.difficulty': 'Предпочтения сложности',
+    'settings.goal': 'Ежедневная цель изучения',
 
     // Errors
-    'error.network': 'Ошибка сети. Проверьте подключение к интернету.',
-    'error.unauthorized': 'Пожалуйста, войдите в систему для продолжения.',
-    'error.forbidden': 'У вас нет прав для доступа к этому ресурсу.',
+    'error.network': 'Ошибка сети. Проверьте подключение.',
+    'error.unauthorized': 'Пожалуйста, войдите в систему.',
+    'error.forbidden': 'У вас нет прав доступа к этому.',
     'error.notFound': 'Запрашиваемый ресурс не найден.',
     'error.server': 'Ошибка сервера. Попробуйте позже.',
-    'error.usageLimit': 'Вы достигли лимита использования. Обновите свой план.'
-  }
+    'error.usageLimit': 'Вы достигли лимита использования. Обновите план.'
+  },
 };
-
-export class I18nService {
-  private currentLanguage: SupportedLanguage = 'en';
-
-  constructor() {
-    // Try to get language from localStorage or user profile
-    if (typeof window !== 'undefined') {
-      const savedLanguage = localStorage.getItem('preferred-language') as SupportedLanguage;
-      if (savedLanguage && ['en', 'ru'].includes(savedLanguage)) {
-        this.currentLanguage = savedLanguage;
-      }
-    }
-  }
-
-  setLanguage(language: SupportedLanguage): void {
-    this.currentLanguage = language;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('preferred-language', language);
-    }
-  }
-
-  getLanguage(): SupportedLanguage {
-    return this.currentLanguage;
-  }
-
-  t(key: keyof TranslationKeys): string {
-    return translations[this.currentLanguage][key] || key;
-  }
-
-  getTranslations(): TranslationKeys {
-    return translations[this.currentLanguage];
-  }
-
-  // Helper method to get all available languages
-  getAvailableLanguages() {
-    return [
-      { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
-      { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' }
-    ];
-  }
-}
-
-export const i18n = new I18nService();
 
 // Hook for React components
 export function useTranslation() {
-  return {
-    t: i18n.t.bind(i18n),
-    language: i18n.getLanguage(),
-    setLanguage: i18n.setLanguage.bind(i18n),
-    availableLanguages: i18n.getAvailableLanguages()
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
+
+  useEffect(() => {
+    // Load language preference from localStorage
+    const storedLang = localStorage.getItem('languagePreference') as SupportedLanguage;
+    if (storedLang && translations[storedLang]) {
+      setLanguage(storedLang);
+    } else {
+      // Fallback to browser language or default 'en'
+      const browserLang = navigator.language.split('-')[0] as SupportedLanguage;
+      if (translations[browserLang]) {
+        setLanguage(browserLang);
+      }
+    }
+  }, []);
+
+  const t = (key: keyof TranslationKeys): string => {
+    return translations[language][key] || key;
+  };
+
+  const changeLanguage = (newLang: SupportedLanguage) => {
+    if (translations[newLang]) {
+      setLanguage(newLang);
+      localStorage.setItem('languagePreference', newLang);
+    }
+  };
+
+  return { 
+    t, 
+    language, 
+    setLanguage: changeLanguage,
+    availableLanguages: [
+      { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+      { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' }
+    ]
   };
 }

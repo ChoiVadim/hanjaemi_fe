@@ -48,20 +48,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { JaemiLogo } from "@/components/jaemi-logo";
 import { useAuth } from "@/components/context/auth-context";
+import { useTranslation, TranslationKeys } from "@/lib/i18n";
 
 const platformItems = [
   {
-    title: "Learning",
+    titleKey: "common.learning",
     icon: Home,
     href: "/study",
   },
   {
-    title: "Youtube",
+    titleKey: "common.youtube",
     icon: Youtube,
     href: "/youtube",
   },
   {
-    title: "TOPIK",
+    titleKey: "common.test",
     icon: FileText,
     href: "/topic",
   },
@@ -80,6 +81,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { open, setOpen, toggleSidebar } = useSidebar();
   const { user, signOut, backendData, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
 
   // Get chat history from backend data
   const chatHistory: ChatHistoryItem[] = backendData?.chatHistory || [];
@@ -143,7 +145,6 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarContent
-          data-tour="sidebar-nav"
           className={cn(
             "transition-all duration-300 ease-in-out",
             open ? "px-2" : ""
@@ -152,17 +153,17 @@ export function AppSidebar() {
           <SidebarGroup>
             {open && (
               <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-                Platform
+                {t('common.platform')}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
               {open ? (
                 <SidebarMenu>
                   {platformItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                    <SidebarMenuItem key={item.titleKey}>
                       <SidebarMenuButton
                         asChild
-                        title={item.title}
+                        title={t(item.titleKey as keyof TranslationKeys)}
                         className={cn(
                           "transition-all duration-300 ease-in-out h-9 justify-start gap-2 px-3 rounded-none border-0 outline-none shadow-none ring-0",
                           pathname === item.href
@@ -172,7 +173,7 @@ export function AppSidebar() {
                       >
                         <Link href={item.href} className="flex items-center">
                           <item.icon className="shrink-0 h-4 w-4 border-0 outline-none shadow-none" />
-                          <span>{item.title}</span>
+                          <span>{t(item.titleKey as keyof TranslationKeys)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -182,7 +183,7 @@ export function AppSidebar() {
                 <div className="flex flex-col items-center gap-1 py-3">
                   {platformItems.map((item) => (
                     <Link
-                      key={item.title}
+                      key={item.titleKey}
                       href={item.href}
                       className={cn(
                         "h-10 w-10 flex items-center justify-center rounded-none border-0 outline-none shadow-none ring-0 transition-all duration-300 ease-in-out",
@@ -190,7 +191,7 @@ export function AppSidebar() {
                           ? "bg-accent text-accent-foreground"
                           : "hover:bg-accent/50"
                       )}
-                      title={item.title}
+                      title={t(item.titleKey as keyof TranslationKeys)}
                     >
                       <item.icon className="h-5 w-5 border-0 outline-none shadow-none" />
                     </Link>
@@ -203,12 +204,12 @@ export function AppSidebar() {
           {open && (
             <SidebarGroup className="pt-3">
               <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-                Chat History
+                {t('common.chatHistory')}
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 {authLoading ? (
                   <div className="px-3 py-2">
-                    <div className="text-xs text-muted-foreground animate-pulse">Loading chat history...</div>
+                    <div className="text-xs text-muted-foreground animate-pulse">{t('common.loading')}</div>
                   </div>
                 ) : formattedChatHistory.length > 0 ? (
                   <ScrollArea className="h-48">
@@ -262,10 +263,10 @@ export function AppSidebar() {
                 ) : (
                   <div className="px-3 py-2">
                     <div className="text-xs text-muted-foreground">
-                      💬 No chat history yet
+                      💬 {t('common.noChatHistory')}
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-1">
-                      Start a conversation to see history
+                      {t('common.startConversation')}
                     </div>
                   </div>
                 )}
@@ -279,7 +280,6 @@ export function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  data-tour="user-profile"
                   variant="ghost"
                   className="w-full flex items-center justify-between p-3 h-auto rounded-none border-t"
                 >
@@ -311,20 +311,22 @@ export function AppSidebar() {
               >
                 <DropdownMenuItem className="flex gap-2 items-center">
                   <ArrowUpCircle className="h-4 w-4" />
-                  <span>Upgrade to Pro</span>
+                  <span>{t('common.upgradeToPro')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex gap-2 items-center">
-                  <User className="h-4 w-4" />
-                  <span>Account</span>
+                <DropdownMenuItem className="flex gap-2 items-center" asChild>
+                  <Link href="/settings">
+                    <User className="h-4 w-4" />
+                    <span>{t('common.account')}</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex gap-2 items-center">
                   <CreditCard className="h-4 w-4" />
-                  <span>Billing</span>
+                  <span>{t('common.billing')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex gap-2 items-center">
                   <Bell className="h-4 w-4" />
-                  <span>Notifications</span>
+                  <span>{t('common.notifications')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -332,7 +334,7 @@ export function AppSidebar() {
                   className="flex gap-2 items-center"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Log out</span>
+                  <span>{t('common.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -360,20 +362,22 @@ export function AppSidebar() {
                 >
                   <DropdownMenuItem className="flex gap-2 items-center">
                     <ArrowUpCircle className="h-4 w-4" />
-                    <span>Upgrade to Pro</span>
+                    <span>{t('common.upgradeToPro')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex gap-2 items-center">
-                    <User className="h-4 w-4" />
-                    <span>Account</span>
+                  <DropdownMenuItem className="flex gap-2 items-center" asChild>
+                    <Link href="/settings">
+                      <User className="h-4 w-4" />
+                      <span>{t('common.account')}</span>
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex gap-2 items-center">
                     <CreditCard className="h-4 w-4" />
-                    <span>Billing</span>
+                    <span>{t('common.billing')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex gap-2 items-center">
                     <Bell className="h-4 w-4" />
-                    <span>Notifications</span>
+                    <span>{t('common.notifications')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -381,7 +385,7 @@ export function AppSidebar() {
                     className="flex gap-2 items-center"
                   >
                     <LogOut className="h-4 w-4" />
-                    <span>Log out</span>
+                    <span>{t('common.logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

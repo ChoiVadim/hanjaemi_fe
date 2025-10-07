@@ -8,36 +8,18 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/study";
-  
-  // Get the actual domain from headers for production
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const host = request.headers.get("host");
-  const actualOrigin = forwardedHost ? `https://${forwardedHost}` : 
-                      (host && !host.includes("localhost")) ? `https://${host}` : 
-                      origin;
 
-  console.log("Auth callback received:", { 
-    code: !!code, 
-    error, 
-    origin, 
-    next,
-    url: request.url,
-    headers: {
-      host: request.headers.get("host"),
-      "x-forwarded-host": request.headers.get("x-forwarded-host"),
-      "x-forwarded-proto": request.headers.get("x-forwarded-proto"),
-    }
-  });
+  console.log("Auth callback received:", { code: !!code, error, origin, next });
 
   // Check if OAuth provider returned an error
   if (error) {
     console.error("OAuth provider error:", error);
-    return NextResponse.redirect(`${actualOrigin}/auth/auth-code-error`);
+    return NextResponse.redirect(`${origin}/auth/auth-code-error`);
   }
 
   if (code) {
     const cookieStore = cookies();
-    const response = NextResponse.redirect(`${actualOrigin}${next}`);
+    const response = NextResponse.redirect(`${origin}${next}`);
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -70,14 +52,16 @@ export async function GET(request: NextRequest) {
     });
 
     if (!exchangeError) {
-      console.log("Redirect logic:", {
-        actualOrigin,
-        next,
-        isLocalEnv: process.env.NODE_ENV === "development"
-      });
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const isLocalEnv = process.env.NODE_ENV === "development";
 
-      console.log("Redirecting to:", `${actualOrigin}${next}`);
-      return NextResponse.redirect(`${actualOrigin}${next}`);
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`);
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      } else {
+        return response;
+      }
     } else {
       console.error("Failed to exchange code for session:", exchangeError);
     }
@@ -86,5 +70,5 @@ export async function GET(request: NextRequest) {
   }
 
   // return the user to an error page with instructions
-  return NextResponse.redirect(`${actualOrigin}/auth/auth-code-error`);
+  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }

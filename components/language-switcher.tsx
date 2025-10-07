@@ -9,9 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslation, SupportedLanguage } from '@/lib/i18n';
 import { userService } from '@/lib/services/userService';
-import { SupportedLanguage } from '@/lib/types/database';
 
 export function LanguageSwitcher() {
   const { t, language, setLanguage, availableLanguages } = useTranslation();
