@@ -11,6 +11,8 @@ interface TourContextType {
   startFullOnboarding: () => void;
   resetOnboarding: () => void;
   continueLessonTour: () => void;
+  markTourCompleted: () => void;
+  markLessonTourCompleted: () => void;
 }
 
 const TourContext = createContext<TourContextType | undefined>(undefined);
@@ -527,16 +529,44 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
   }, []);
 
   const continueLessonTour = useCallback(() => {
-    const hasSeenStudyTour = localStorage.getItem('hanjaemi-tours-completed');
-    if (hasSeenStudyTour) {
-      setCurrentTour('lessonPage');
-      setStepIndex(0);
-      setIsRunning(true);
+    setCurrentTour('lessonPage');
+    setStepIndex(0);
+    setIsRunning(true);
+  }, []);
+
+  const markTourCompleted = useCallback(async () => {
+    try {
+      await fetch('/api/users/mark-not-new', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Error marking tour as completed:', error);
+    }
+  }, []);
+
+  const markLessonTourCompleted = useCallback(async () => {
+    try {
+      await fetch('/api/users/mark-lesson-tour-completed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Error marking lesson tour as completed:', error);
     }
   }, []);
 
   const resetOnboarding = useCallback(() => {
-    localStorage.removeItem('hanjaemi-tours-completed');
+    // Reset onboarding state - no localStorage needed
+    setFullOnboardingTours([]);
+    setCurrentOnboardingIndex(0);
+    setCurrentTour(null);
+    setStepIndex(0);
+    setIsRunning(false);
   }, []);
 
   const startFullOnboarding = useCallback(() => {
@@ -578,9 +608,11 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
         setFullOnboardingTours([]);
         setCurrentOnboardingIndex(0);
         
-        // If this was the study page tour, mark it as completed
+        // Mark tour as completed in database based on tour type
         if (currentTour === 'studyPage') {
-          localStorage.setItem('hanjaemi-tours-completed', 'true');
+          markTourCompleted(); // Mark user as not new
+        } else if (currentTour === 'lessonPage') {
+          markLessonTourCompleted(); // Mark lesson tour as completed
         }
       }
     } else if (type === EVENTS.STEP_AFTER) {
@@ -598,6 +630,8 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
     startFullOnboarding,
     resetOnboarding,
     continueLessonTour,
+    markTourCompleted,
+    markLessonTourCompleted,
   };
 
   return (

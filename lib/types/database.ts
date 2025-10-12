@@ -6,6 +6,8 @@ export interface UserProfile {
   avatar_url?: string;
   preferred_language: 'en' | 'ru';
   timezone: string;
+  is_new_user: boolean;
+  lesson_tour_completed: boolean;
   created_at: string;
   updated_at: string;
 }

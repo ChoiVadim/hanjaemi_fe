@@ -60,15 +60,46 @@ export default function LevelPage({ params }: { params: { id: string } }) {
     loadLessons();
   }, [params.id]);
 
-  // Continue lesson page tour when page loads (if study tour was completed)
+  // Continue lesson page tour when page loads (only for new users)
   useEffect(() => {
-    if (!isLoading && lessons.length > 0) {
-      const timer = setTimeout(() => {
-        continueLessonTour();
-      }, 1000);
+    const checkUserAndStartTour = async () => {
+      if (!isLoading && lessons.length > 0) {
+        try {
+          // Check if user is new from database
+          const response = await fetch('/api/users/profile', {
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          if (response.ok) {
+            const profile = await response.json();
+            
+            // Show lesson tour if user completed main tour but not lesson tour
+            if (!profile.is_new_user && !profile.lesson_tour_completed) {
+              console.log('User completed main tour but not lesson tour, starting lesson tour');
+              const timer = setTimeout(() => {
+                continueLessonTour();
+              }, 1000);
+              return () => clearTimeout(timer);
+            } else if (profile.is_new_user) {
+              console.log('New user on lesson page, skipping lesson tour (should complete main tour first)');
+            } else if (profile.lesson_tour_completed) {
+              console.log('User already completed lesson tour, skipping');
+            }
+          } else {
+            console.log('Failed to fetch profile, skipping lesson tour');
+          }
+        } catch (error) {
+          console.error('Error checking user status for lesson tour:', error);
+          console.log('Error checking user status, skipping lesson tour');
+        }
+      }
+    };
 
-      return () => clearTimeout(timer);
-    }
+    checkUserAndStartTour();
   }, [isLoading, lessons.length, continueLessonTour]);
 
   // Load current lesson data from the lessons array

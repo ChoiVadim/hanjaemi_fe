@@ -68,12 +68,18 @@ export async function GET(request: NextRequest) {
           if (profileError && profileError.code === 'PGRST116') {
             // Profile doesn't exist, create it
             console.log("Creating new user profile for:", user.email);
-            await serverUserService.createUserProfile({
+            const profileResult = await serverUserService.createUserProfile({
               email: user.email || '',
               full_name: user.user_metadata?.full_name || user.user_metadata?.name,
               preferred_language: 'en',
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             });
+            
+            if (profileResult) {
+              console.log("✅ User profile and related records created successfully");
+            } else {
+              console.error("❌ Failed to create user profile and related records");
+            }
           } else if (profileError) {
             console.error("Error checking profile:", profileError);
           } else {

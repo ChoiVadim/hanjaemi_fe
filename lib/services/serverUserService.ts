@@ -108,6 +108,44 @@ export class ServerUserService {
     }
   }
 
+  async markUserAsNotNew(): Promise<boolean> {
+    try {
+      const supabase = this.getSupabase();
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ is_new_user: false })
+        .eq('id', user.user.id);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error marking user as not new:', error);
+      return false;
+    }
+  }
+
+  async markLessonTourCompleted(): Promise<boolean> {
+    try {
+      const supabase = this.getSupabase();
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ lesson_tour_completed: true })
+        .eq('id', user.user.id);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error marking lesson tour as completed:', error);
+      return false;
+    }
+  }
+
   // Subscription Management
   private async createDefaultSubscription(userId: string): Promise<void> {
     const serviceSupabase = this.getServiceSupabase();
