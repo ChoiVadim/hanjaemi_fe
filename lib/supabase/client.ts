@@ -27,10 +27,13 @@ export async function signInWithGoogle() {
   const supabase = createClient();
 
   try {
+    // Use environment variable for redirect URL, fallback to current origin
+    const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || `${window.location.origin}/auth/callback?next=/study`;
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/study`,
+        redirectTo: redirectUrl,
         flowType: "pkce",
         scopes: "email profile",
       },
@@ -51,16 +54,19 @@ export async function signInWithKakaoTalk() {
   const supabase = createClient();
 
   try {
+    // Use environment variable for redirect URL, fallback to current origin
+    const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL || `${window.location.origin}/auth/callback?next=/study`;
+    
     console.log("Attempting Kakao OAuth with config:", {
       provider: "kakao",
-      redirectTo: `${window.location.origin}/auth/callback?next=/study`,
+      redirectTo: redirectUrl,
       flowType: "pkce",
     });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/study`,
+        redirectTo: redirectUrl,
         flowType: "pkce",
         scopes: "profile_nickname profile_image account_email",
       },
