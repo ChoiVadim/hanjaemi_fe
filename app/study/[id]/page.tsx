@@ -33,12 +33,13 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   const { data: lessons = [], isLoading } = useLessons(params.id);
   const { data: profile } = useUserProfile();
 
-  // Set initial selected lesson when lessons load
+  // Set initial selected lesson when lessons load - always set to first lesson
   useEffect(() => {
-    if (lessons.length > 0 && !selectedLessonId) {
-      setSelectedLessonId(lessons[0].number?.toString() || "1");
+    if (lessons.length > 0) {
+      const firstLessonId = lessons[0].number?.toString() || "1";
+      setSelectedLessonId(firstLessonId);
     }
-  }, [lessons, selectedLessonId]);
+  }, [lessons.length]);
 
   // Continue lesson page tour when page loads (only for new users)
   useEffect(() => {
@@ -129,17 +130,7 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   }, []);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="h-8 px-2"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-      </div>
-
+    <div className="flex flex-col max-h-screen p-10">
       {/* Lesson Navigation Tabs */}
       <div data-tour="lesson-navigation" className="mb-3">
         <Tabs value={selectedLessonId} onValueChange={setSelectedLessonId}>

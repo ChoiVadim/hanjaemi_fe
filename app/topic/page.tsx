@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { Pencil, Book, Headphones, MessageCircle } from "lucide-react";
 
 const topics = [
@@ -46,16 +45,6 @@ export default function TopicPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="h-8 px-2"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-      </div>
-
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="max-w-5xl mx-auto flex flex-col items-center">
           <h1 className="text-4xl font-bold text-center mb-4">Choose a Topic</h1>

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PromptBox } from "@/components/ui/chatgpt-prompt-input";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -303,20 +304,20 @@ Level: Beginner-friendly explanation`
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  const sendMessage = async (messageText?: string) => {
+    const messageToSend = messageText || input;
+    if (!messageToSend.trim()) return;
 
     const userMessage = {
       id: generateMessageId(),
-      content: input,
+      content: messageToSend,
       sender: "user" as const,
     };
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = input;
     setInput("");
 
     try {
-      await handleSubmit(currentInput);
+      await handleSubmit(messageToSend);
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -461,24 +462,17 @@ Level: Beginner-friendly explanation`
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
-      <div className="flex gap-2 border-t p-2">
-        <Input
+      <div className="border-t p-2">
+        <PromptBox
           data-tour="chat-input"
-          placeholder={usageError ? "Upgrade to continue chatting..." : "Type your message..."}
+          placeholder={usageError ? "Upgrade to continue chatting..." : "Message..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !isLoading && !usageError && sendMessage()}
+          onSubmit={(value) => {
+            sendMessage(value);
+          }}
           disabled={isLoading || !!usageError}
-          className="h-9"
         />
-        <Button 
-          data-tour="chat-send"
-          onClick={sendMessage} 
-          disabled={isLoading || !!usageError} 
-          className="h-9 px-3"
-        >
-          {usageError ? <Crown className="h-4 w-4" /> : "Send"}
-        </Button>
       </div>
     </div>
   );

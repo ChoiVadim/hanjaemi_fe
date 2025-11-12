@@ -5,15 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Mic,
-  MicOff,
   Volume2,
   VolumeX,
   RotateCcw,
   FileText,
+  Play,
+  Pause,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AIVoiceInput } from "@/components/ui/ai-voice-input";
 import { EvaluationResults } from "./EvaluationResults";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Message {
   id: string;
@@ -46,11 +53,13 @@ export function SpeakingTestInterface() {
   const [testStarted, setTestStarted] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const recordingStartTimeRef = useRef<number>(0);
 
   // Auto-scroll to bottom when new messages appear
   useEffect(() => {
@@ -60,6 +69,32 @@ export function SpeakingTestInterface() {
   // Initialize the speaking test with a greeting
   const startTest = async () => {
     setTestStarted(true);
+    
+    // Check for cached initial greeting
+    const cachedGreeting = localStorage.getItem("speaking_test_initial_greeting");
+    const cachedAudio = localStorage.getItem("speaking_test_initial_audio");
+    
+    if (cachedGreeting && cachedAudio) {
+      // Use cached audio immediately
+      const audioBlob = new Blob([Buffer.from(cachedAudio, "base64")], {
+        type: "audio/mpeg",
+      });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      const message: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: cachedGreeting,
+        timestamp: new Date(),
+        audioUrl,
+      };
+
+      setMessages([message]);
+      playAudio(audioUrl);
+      return;
+    }
+
+    // If not cached, generate and save
     setIsProcessing(true);
 
     try {
@@ -70,6 +105,11 @@ export function SpeakingTestInterface() {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Cache the greeting text and audio
+        localStorage.setItem("speaking_test_initial_greeting", data.text);
+        localStorage.setItem("speaking_test_initial_audio", data.audio);
+        
         const audioBlob = new Blob([Buffer.from(data.audio, "base64")], {
           type: "audio/mpeg",
         });
@@ -100,6 +140,7 @@ export function SpeakingTestInterface() {
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      recordingStartTimeRef.current = Date.now();
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -111,6 +152,7 @@ export function SpeakingTestInterface() {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/wav",
         });
+        const duration = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
         await sendAudioToAI(audioBlob);
         stream.getTracks().forEach((track) => track.stop());
       };
@@ -128,6 +170,23 @@ export function SpeakingTestInterface() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      const duration = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
+      setRecordingDuration(duration);
+    }
+  };
+
+  // Handle voice input start
+  const handleVoiceStart = () => {
+    if (!isRecording) {
+      startRecording();
+    }
+  };
+
+  // Handle voice input stop
+  const handleVoiceStop = (duration: number) => {
+    if (isRecording) {
+      stopRecording();
+      setRecordingDuration(duration);
     }
   };
 
@@ -219,6 +278,14 @@ export function SpeakingTestInterface() {
     }
   };
 
+  // Play last AI response
+  const playLastResponse = () => {
+    const lastAiMessage = [...messages].reverse().find(msg => msg.role === "assistant" && msg.audioUrl);
+    if (lastAiMessage?.audioUrl) {
+      playAudio(lastAiMessage.audioUrl);
+    }
+  };
+
   // Generate final evaluation
   const generateEvaluation = async () => {
     if (messages.length < 2) {
@@ -250,115 +317,15 @@ export function SpeakingTestInterface() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Control Panel */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Speaking Test Control Panel</span>
-            <Badge variant={testStarted ? "default" : "secondary"}>
-              {testStarted ? "Test in progress" : "Test not started"}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4 justify-center">
-            {!testStarted ? (
-              <Button
-                onClick={startTest}
-                disabled={isProcessing}
-                size="lg"
-                className="min-w-[120px]"
-              >
-                {isProcessing ? "Processing..." : "Start Test"}
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={isProcessing || isPlaying}
-                  size="lg"
-                  variant={isRecording ? "destructive" : "default"}
-                  className="min-w-[120px]"
-                >
-                  {isRecording ? (
-                    <>
-                      <MicOff className="w-4 h-4 mr-2" />
-                      Stop Recording
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4 mr-2" />
-                      Record
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={isPlaying ? stopAudio : undefined}
-                  disabled={!isPlaying}
-                  size="lg"
-                  variant="outline"
-                  className="min-w-[120px]"
-                >
-                  {isPlaying ? (
-                    <>
-                      <VolumeX className="w-4 h-4 mr-2" />
-                      Stop Audio
-                    </>
-                  ) : (
-                    <>
-                      <Volume2 className="w-4 h-4 mr-2" />
-                      Play Audio
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={generateEvaluation}
-                  disabled={isEvaluating || messages.length < 2}
-                  size="lg"
-                  variant="secondary"
-                  className="min-w-[120px]"
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  {isEvaluating ? "Finalizing..." : "Final Evaluation"}
-                </Button>
-
-                <Button
-                  onClick={resetTest}
-                  size="lg"
-                  variant="outline"
-                  className="min-w-[120px]"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset
-                </Button>
-              </>
-            )}
-          </div>
-
-          {isProcessing && (
-            <div className="mt-4 text-center">
-              <div className="inline-flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span className="text-sm text-muted-foreground">
-                  Processing...
-                </span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Conversation History */}
+    <div className="h-full flex gap-4 p-10 items-center justify-center">
+      {/* Conversation History - Left Side */}
       {messages.length > 0 && (
-        <Card>
-          <CardHeader>
+        <Card className="w-2/3 flex flex-col h-full">
+          <CardHeader className="flex-shrink-0">
             <CardTitle>Conversation History</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+          <CardContent className="flex-1 overflow-y-auto">
+            <div className="space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -408,17 +375,128 @@ export function SpeakingTestInterface() {
         </Card>
       )}
 
-      {/* Evaluation Results */}
-      {evaluation && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Final Evaluation Results</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EvaluationResults evaluation={evaluation} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Main Test Interface - Right Side */}
+      <div className={cn("flex-1 flex flex-col gap-4 overflow-y-auto", messages.length > 0 ? "" : "max-w-5xl mx-auto")}>
+        {!testStarted ? (
+          <Card className="border-0">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl mb-2">TOPIK Speaking Test</CardTitle>
+              <p className="text-muted-foreground">
+                Practice your Korean speaking skills with AI-powered evaluation
+              </p>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-6">
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Click the button below to start your speaking test
+                </p>
+              </div>
+              <Button
+                onClick={startTest}
+                disabled={isProcessing}
+                size="lg"
+                className="min-w-[200px] h-12 text-lg"
+              >
+                {isProcessing ? "Starting..." : "Start Speaking Test"}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Voice Input Section */}
+            <Card className="border-2">
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-xl flex items-center justify-center gap-2">
+                  <Badge variant={isRecording ? "destructive" : "secondary"} className="text-xs">
+                    {isRecording ? "Recording..." : "Ready"}
+                  </Badge>
+                  <span>Record Your Response</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-8">
+                <AIVoiceInput
+                  onStart={handleVoiceStart}
+                  onStop={handleVoiceStop}
+                  visualizerBars={48}
+                  className="py-4"
+                />
+                {isProcessing && (
+                  <div className="mt-4 text-center">
+                    <div className="inline-flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span className="text-sm text-muted-foreground">
+                        Processing your response...
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Control Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Test Controls</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <Button
+                    onClick={isPlaying ? stopAudio : playLastResponse}
+                    disabled={messages.length === 0 || (!isPlaying && !messages.some(msg => msg.role === "assistant" && msg.audioUrl))}
+                    size="default"
+                    variant="outline"
+                    className="min-w-[140px]"
+                  >
+                    {isPlaying ? (
+                      <>
+                        <Pause className="w-4 h-4 mr-2" />
+                        Pause Audio
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Play Last Response
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={generateEvaluation}
+                    disabled={isEvaluating || messages.length < 2 || isProcessing}
+                    size="default"
+                    variant="secondary"
+                    className="min-w-[160px]"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    {isEvaluating ? "Evaluating..." : "Get Final Evaluation"}
+                  </Button>
+
+                  <Button
+                    onClick={resetTest}
+                    size="default"
+                    variant="outline"
+                    className="min-w-[120px]"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Reset Test
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+          </>
+        )}
+      </div>
+
+      {/* Evaluation Results Modal */}
+      <Dialog open={!!evaluation} onOpenChange={(open) => !open && setEvaluation(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Final Evaluation Results</DialogTitle>
+          </DialogHeader>
+          {evaluation && <EvaluationResults evaluation={evaluation} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

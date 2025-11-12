@@ -186,19 +186,9 @@ export default function ListeningPracticePage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen p-10">
       {/* Hidden audio element */}
       <audio ref={audioRef} src={currentQuestion.audioUrl} preload="metadata" />
-
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="h-8 px-2"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-      </div>
 
       {/* Header */}
       <div className="mb-6">

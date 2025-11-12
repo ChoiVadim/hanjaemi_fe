@@ -112,17 +112,7 @@ export default function ReadingPracticePage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="h-8 px-2"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-      </div>
-
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen p-10">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">TOPIK Reading Practice</h1>

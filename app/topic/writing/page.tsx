@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Clock, FileText, CheckCircle, AlertCircle, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface EvaluationResult {
   score: number;
@@ -27,6 +28,7 @@ export default function WritingPracticePage() {
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // Character count (Korean characters count differently)
   const characterCount = essay.length;
@@ -80,29 +82,19 @@ export default function WritingPracticePage() {
   }, [isTimerRunning]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="h-8 px-2"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
-      </div>
-
-      <div className="mb-6">
+    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen p-4 md:p-6 lg:p-8">
+      <div className="mb-4">
         <h1 className="text-3xl font-bold mb-2">Korean Writing Practice</h1>
         <p className="text-muted-foreground">
           Practice Korean writing in real exam format and get AI evaluation.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
-        {/* Writing Area */}
-        <div className="lg:col-span-2 flex flex-col overflow-hidden">
-          <Card className="flex flex-col h-full overflow-hidden">
-            <CardHeader>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 flex-1 overflow-hidden min-h-0">
+        {/* Writing Answer Sheet - Takes 2 columns, big */}
+        <div className="lg:col-span-2 flex flex-col overflow-hidden min-h-0">
+          <Card className="flex flex-col flex-1 overflow-hidden min-h-0">
+            <CardHeader className="flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -122,15 +114,15 @@ export default function WritingPracticePage() {
                   </Button>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground">
-Please write your answer below; your answer must be between 600 and 700 characters including spaces.
+              <p className="text-sm text-muted-foreground mt-2">
+                Please write your answer below; your answer must be between 200 and 300 characters including spaces.
                 <br />
-                아래 빈칸에 600자에서 700자 이내로 작문하십시오 (띄어쓰기 포함).
+                아래 빈칸에 200자에서 300자 이내로 작문하십시오 (띄어쓰기 포함).
               </p>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col overflow-hidden">
+            <CardContent className="flex-1 flex flex-col overflow-hidden min-h-0 space-y-4">
               {/* Exam-style grid background */}
-              <div className="relative flex-1 flex flex-col">
+              <div className="relative flex-1 flex flex-col min-h-0">
                 <div 
                   className="absolute inset-0 pointer-events-none opacity-10"
                   style={{
@@ -145,7 +137,7 @@ Please write your answer below; your answer must be between 600 and 700 characte
                   value={essay}
                   onChange={(e) => setEssay(e.target.value)}
                   placeholder="Write your Korean essay here..."
-                  className="flex-1 resize-none font-mono leading-relaxed bg-transparent relative z-10 min-h-0"
+                  className="flex-1 resize-none font-mono leading-relaxed bg-transparent relative z-10 min-h-[400px]"
                   style={{
                     lineHeight: '25px',
                     fontSize: '14px'
@@ -154,13 +146,13 @@ Please write your answer below; your answer must be between 600 and 700 characte
               </div>
               
               {/* Character count indicator */}
-              <div className="mt-4 flex justify-between items-center">
+              <div className="flex-shrink-0 flex justify-between items-center pt-2">
                 <div className="flex gap-4 text-sm text-muted-foreground">
                   <span>Characters: {characterCount}</span>
                   <span>Words: {wordCount}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {characterCount >= 600 && characterCount <= 700 ? (
+                  {characterCount >= 200 && characterCount <= 300 ? (
                     <Badge variant="default" className="bg-green-500">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Appropriate Length
@@ -168,13 +160,13 @@ Please write your answer below; your answer must be between 600 and 700 characte
                   ) : (
                     <Badge variant="secondary">
                       <AlertCircle className="h-3 w-3 mr-1" />
-                      {characterCount < 600 ? "Too Short" : "Too Long"}
+                      {characterCount < 200 ? "Too Short" : "Too Long"}
                     </Badge>
                   )}
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="flex-shrink-0">
                 <Button 
                   onClick={handleEvaluate}
                   disabled={isEvaluating || !essay.trim()}
@@ -188,8 +180,44 @@ Please write your answer below; your answer must be between 600 and 700 characte
           </Card>
         </div>
 
-        {/* Evaluation Results */}
-        <div className="space-y-6 overflow-auto">
+        {/* Right Sidebar - Question Image and Evaluation Results */}
+        <div className="space-y-4 md:space-y-6 overflow-auto">
+          {/* Question Image Card - Smaller, on the right */}
+          <Card className="flex-shrink-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Question Prompt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="w-full border rounded-lg overflow-auto bg-gray-50 dark:bg-gray-800 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setIsImageModalOpen(true)}
+              >
+                <img 
+                  src="/writing_question.png" 
+                  alt="Writing question prompt"
+                  className="w-full h-auto object-contain max-h-[250px]"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Click to view full size
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Fullscreen Image Modal */}
+          <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+            <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-2">
+              <div className="relative w-full h-full flex items-center justify-center">
+                <img 
+                  src="/writing_question.png" 
+                  alt="Writing question prompt - Full size"
+                  className="max-w-full max-h-[90vh] object-contain"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Evaluation Results */}
           {evaluation ? (
             <>
               {/* Score Card */}

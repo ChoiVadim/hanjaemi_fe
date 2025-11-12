@@ -28,7 +28,7 @@ export default function StudyPage({
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
-  const videoRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLIFrameElement>(null);
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const [noSubtitles, setNoSubtitles] = useState(false);
 
@@ -145,9 +145,6 @@ export default function StudyPage({
 
   return (
     <div className="container mx-auto p-6 flex flex-col h-[calc(100vh-2rem)]">
-      <Button variant="ghost" onClick={handleBack} className="mb-4 w-fit">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Search
-      </Button>
       <div className="grid gap-4 lg:grid-cols-2 flex-1 overflow-hidden">
         <div className="space-y-4 overflow-hidden flex flex-col">
           <Card className="p-3">
