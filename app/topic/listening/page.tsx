@@ -38,6 +38,13 @@ export default function ListeningPracticePage() {
     new Set()
   );
   const [correctAnswers, setCorrectAnswers] = useState<Set<number>>(new Set());
+  const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
+  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  // session timer (seconds) - 40 minutes for TOPIK I listening mock
+  const [sessionSecondsLeft, setSessionSecondsLeft] = useState(40 * 60);
+  const sessionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Audio player state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -57,6 +64,11 @@ export default function ListeningPracticePage() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // Ensure audio is paused/reset when switching questions
+    audio.pause();
+    audio.currentTime = 0;
+    setIsPlaying(false);
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
@@ -80,16 +92,80 @@ export default function ListeningPracticePage() {
     }
   }, [volume, playbackRate]);
 
+  // Session timer: start when sessionStarted is true
+  useEffect(() => {
+    if (!sessionStarted) return;
+
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
+      sessionTimerRef.current = null;
+    }
+    sessionTimerRef.current = setInterval(() => {
+      setSessionSecondsLeft((s) => s - 1);
+    }, 1000);
+
+    return () => {
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+        sessionTimerRef.current = null;
+      }
+    };
+  }, [sessionStarted]);
+
+  // When session timer expires, show results and stop timer
+  useEffect(() => {
+    if (sessionSecondsLeft <= 0) {
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+        sessionTimerRef.current = null;
+      }
+      setSessionStarted(false);
+      setShowResults(true);
+      setIsReviewMode(false);
+    }
+  }, [sessionSecondsLeft]);
+
   const togglePlayPause = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     if (isPlaying) {
+      // pause immediately
       audio.pause();
-    } else {
-      audio.play();
+      setIsPlaying(false);
+      return;
     }
-    setIsPlaying(!isPlaying);
+
+    // Try to play - modern browsers return a promise
+    // Force the audio source to the requested test file before playing
+    // (serving from the Next.js `public/` folder at /audio/listening/...)
+    try {
+      audio.src = "/audio/listening/conversation_01.mp3";
+      // reload the media element so the new src is used
+      // some browsers require load() to pick up the new src
+      audio.load();
+    } catch (e) {
+      // ignore if setting src fails
+      // eslint-disable-next-line no-console
+      console.warn("Failed to set test audio src:", e);
+    }
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch((err) => {
+          // Play failed (autoplay or other); log and keep isPlaying false
+          // This usually happens when browser blocks autoplay without user gesture.
+          console.warn("Audio play failed:", err);
+          setIsPlaying(false);
+        });
+    } else {
+      // Older browsers may not return a promise
+      setIsPlaying(true);
+    }
   };
 
   const handleSeek = (value: number[]) => {
@@ -107,32 +183,51 @@ export default function ListeningPracticePage() {
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
-    if (showAnswer) return;
+    // Save selection immediately so it persists when navigating
+    // Don't allow changing in review mode or after results
+    if (isReviewMode || showResults) return;
     setSelectedAnswer(answerIndex);
-  };
-
-  const handleSubmitAnswer = () => {
-    if (selectedAnswer === null) return;
-
-    setShowAnswer(true);
+    setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: answerIndex }));
     setAnsweredQuestions((prev) => new Set([...prev, currentQuestion.id]));
 
-    if (selectedAnswer === currentQuestion.correctAnswer) {
+    // update correctness tracking (kept hidden until review/results)
+    if (answerIndex === currentQuestion.correctAnswer) {
       setCorrectAnswers((prev) => new Set([...prev, currentQuestion.id]));
+    } else {
+      setCorrectAnswers((prev) => {
+        const next = new Set(prev);
+        next.delete(currentQuestion.id);
+        return next;
+      });
     }
   };
+
+  // Submit flow removed for mock exam behavior; answers saved on click.
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
-      resetQuestion();
+      // restore previously saved answer for next question
+      const nextId = topikListeningQuestions[currentQuestionIndex + 1].id;
+      const ans = userAnswers[nextId];
+      setSelectedAnswer(ans !== undefined ? ans : null);
+      setShowTip(false);
+      setShowScript(false);
+      setIsPlaying(false);
+      if (audioRef.current) audioRef.current.currentTime = 0;
     }
   };
 
   const handlePrevQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prev) => prev - 1);
-      resetQuestion();
+      const prevId = topikListeningQuestions[currentQuestionIndex - 1].id;
+      const ans = userAnswers[prevId];
+      setSelectedAnswer(ans !== undefined ? ans : null);
+      setShowTip(false);
+      setShowScript(false);
+      setIsPlaying(false);
+      if (audioRef.current) audioRef.current.currentTime = 0;
     }
   };
 
@@ -152,7 +247,17 @@ export default function ListeningPracticePage() {
     setCurrentQuestionIndex(0);
     setAnsweredQuestions(new Set());
     setCorrectAnswers(new Set());
+    setUserAnswers({});
+    setIsReviewMode(false);
+    setShowResults(false);
     resetQuestion();
+    // reset session
+    setSessionSecondsLeft(40 * 60);
+    setSessionStarted(false);
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
+      sessionTimerRef.current = null;
+    }
   };
 
   const getQuestionTypeColor = (type: TopikListeningQuestion["type"]) => {
@@ -185,10 +290,94 @@ export default function ListeningPracticePage() {
     }
   };
 
+  const revealAnswers = isReviewMode || showResults;
+
+  const handleStartSession = () => {
+    setSessionStarted(true);
+    setSessionSecondsLeft(40 * 60);
+    // restore any existing answer for the current question
+    const saved = userAnswers[currentQuestion.id];
+    setSelectedAnswer(saved !== undefined ? saved : null);
+    setIsReviewMode(false);
+    setShowResults(false);
+  };
+
+  const handleFinishSession = () => {
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
+      sessionTimerRef.current = null;
+    }
+    setSessionStarted(false);
+    setShowResults(true);
+    setIsReviewMode(false);
+  };
+
+  // If session not started, show the Start Test screen
+  if (!sessionStarted && !showResults && !isReviewMode) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-2rem)]">
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle>TOPIK I Listening Mock Test</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">한국어능력시험 토픽1 듣기 모의고사</p>
+            <p className="mb-6">There are total 30 questions and you have 40 minutes to solve them.</p>
+            <div className="flex gap-3">
+              <Button onClick={handleStartSession} className="flex-1">Start Test</Button>
+              <Button variant="outline" onClick={() => router.back()}>Back</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Results screen (after finishing) - shows score and Review option
+  if (showResults && !isReviewMode) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-2rem)]">
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle>Results</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg mb-4">You scored {score} out of {totalQuestions}</p>
+            <div className="flex gap-3">
+              <Button onClick={() => { setIsReviewMode(true); setShowResults(false); setCurrentQuestionIndex(0); const saved = userAnswers[topikListeningQuestions[0].id]; setSelectedAnswer(saved !== undefined ? saved : null); }} className="flex-1">Review Answers</Button>
+              <Button variant="outline" onClick={handleRestart}>Restart</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
-      {/* Hidden audio element */}
-      <audio ref={audioRef} src={currentQuestion.audioUrl} preload="metadata" />
+    <div className="relative flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+      {/* Top-right fixed timer badge */}
+      {sessionStarted && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-white shadow rounded-full px-4 py-2 border border-gray-200 text-sm font-medium text-red-600">
+            {Math.max(0, Math.floor(sessionSecondsLeft / 60))}:{String(Math.max(0, sessionSecondsLeft % 60)).padStart(2, "0")}
+          </div>
+        </div>
+      )}
+      {/* Hidden audio element (attach handlers so duration/time update even when src changes) */}
+      <audio
+        ref={audioRef}
+        src={currentQuestion.audioUrl}
+        preload="metadata"
+        onLoadedMetadata={() => {
+          const a = audioRef.current;
+          if (a) setDuration(a.duration || 0);
+        }}
+        onTimeUpdate={() => {
+          const a = audioRef.current;
+          if (a) setCurrentTime(a.currentTime || 0);
+        }}
+        onEnded={() => setIsPlaying(false)}
+      />
 
       <div className="flex items-center justify-between mb-2">
         <Button
@@ -219,9 +408,11 @@ export default function ListeningPracticePage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">
-                Score: {score}/{answeredQuestions.size}
-              </span>
+                {revealAnswers ? (
+                  <span className="text-sm font-medium">
+                    Score: {score}/{totalQuestions}
+                  </span>
+                ) : null}
               <Button
                 variant="outline"
                 size="sm"
@@ -288,7 +479,7 @@ export default function ListeningPracticePage() {
                 <div className="mb-4">
                   <Slider
                     value={[currentTime]}
-                    max={duration || 100}
+                    max={duration || 0}
                     step={1}
                     onValueChange={handleSeek}
                     className="w-full"
@@ -324,87 +515,113 @@ export default function ListeningPracticePage() {
                 </div>
               </div>
 
-              {/* Question */}
+              {/* Prompt only (instruction removed) */}
               <div>
-                <h3 className="font-medium mb-4">Question:</h3>
                 <p className="text-sm leading-relaxed whitespace-pre-line">
-                  {currentQuestion.question}
+                  {(() => {
+                    // Remove leading numbering like "1. " and trailing instructions like "Choose..."
+                    let q = String(currentQuestion.question || "");
+                    q = q.replace(/^\s*\d+\.\s*/, "");
+                    const match = q.match(/(Choose.*)$/i);
+                    const stripped = match ? q.replace(match[0], "").trim() : q.trim();
+                    // If the question field only contained numbering + an instruction (so nothing left),
+                    // show a helpful fallback so the UI isn't blank.
+                    if (!stripped) {
+                      return "Listen to the audio and select the correct answer.";
+                    }
+                    return stripped;
+                  })()}
                 </p>
               </div>
 
               {/* Answer Options */}
               <div className="space-y-3">
-                <h3 className="font-medium">Choose the correct answer:</h3>
-                {currentQuestion.options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(index)}
-                    disabled={showAnswer}
-                    className={`w-full p-3 text-left rounded-lg border transition-all ${
-                      selectedAnswer === index
-                        ? showAnswer
-                          ? index === currentQuestion.correctAnswer
-                            ? "border-green-500 bg-green-50 text-green-800"
-                            : "border-red-500 bg-red-50 text-red-800"
-                          : "border-primary bg-primary/5"
-                        : showAnswer && index === currentQuestion.correctAnswer
-                        ? "border-green-500 bg-green-50 text-green-800"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    } ${showAnswer ? "cursor-default" : "cursor-pointer"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-medium">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm">{option}</span>
-                      {showAnswer &&
-                        selectedAnswer === index &&
-                        (selectedAnswer === currentQuestion.correctAnswer ? (
-                          <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                {currentQuestion.options.map((option, index) => {
+                  const isImageOption = typeof option !== "string" && (option as any).src;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelect(index)}
+                      disabled={revealAnswers}
+                      className={`w-full p-3 text-left rounded-lg border transition-all ${
+                        selectedAnswer === index
+                          ? revealAnswers
+                            ? index === currentQuestion.correctAnswer
+                              ? "border-green-500 bg-green-50 text-green-800"
+                              : "border-red-500 bg-red-50 text-red-800"
+                            : "border-primary bg-primary/5"
+                          : revealAnswers && index === currentQuestion.correctAnswer
+                          ? "border-green-500 bg-green-50 text-green-800"
+                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                      } ${revealAnswers ? "cursor-default" : "cursor-pointer"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-medium">
+                          {index + 1}
+                        </span>
+
+                        {isImageOption ? (
+                          <div className="flex items-center gap-3 w-full">
+                            <img
+                              src={(option as any).src}
+                              alt={(option as any).alt || `option-${index + 1}`}
+                              className="max-h-28 object-contain rounded-md shadow-sm"
+                            />
+                            <div className="text-sm text-muted-foreground">
+                              {(option as any).alt}
+                            </div>
+                          </div>
                         ) : (
-                          <XCircle className="h-4 w-4 text-red-600 ml-auto" />
-                        ))}
-                      {showAnswer &&
-                        selectedAnswer !== index &&
-                        index === currentQuestion.correctAnswer && (
-                          <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                          <span className="text-sm">{option as string}</span>
                         )}
-                    </div>
-                  </button>
-                ))}
+
+                        {revealAnswers &&
+                          selectedAnswer === index &&
+                          (selectedAnswer === currentQuestion.correctAnswer ? (
+                            <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-600 ml-auto" />
+                          ))}
+                        {revealAnswers &&
+                          selectedAnswer !== index &&
+                          index === currentQuestion.correctAnswer && (
+                            <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                          )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Buttons: Prev / Next / Finish (answers saved on select) */}
               <div className="flex gap-3">
-                {!showAnswer ? (
+                <Button
+                  variant="outline"
+                  onClick={handlePrevQuestion}
+                  disabled={currentQuestionIndex === 0}
+                  className="flex-1 flex items-center gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {currentQuestionIndex < totalQuestions - 1 ? (
                   <Button
-                    onClick={handleSubmitAnswer}
-                    disabled={selectedAnswer === null}
-                    className="flex-1"
+                    onClick={handleNextQuestion}
+                    className="flex-1 flex items-center gap-2"
                   >
-                    Submit Answer
+                    Next Question
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 ) : (
-                  <div className="flex gap-3 w-full">
-                    <Button
-                      variant="outline"
-                      onClick={handlePrevQuestion}
-                      disabled={currentQuestionIndex === 0}
-                      className="flex items-center gap-2"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Previous
-                    </Button>
-                    <Button
-                      onClick={handleNextQuestion}
-                      disabled={currentQuestionIndex === totalQuestions - 1}
-                      className="flex-1 flex items-center gap-2"
-                    >
-                      Next Question
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handleFinishSession}
+                    className="flex-1 flex items-center gap-2"
+                  >
+                    Finish
+                  </Button>
                 )}
+
                 <Button
                   variant="outline"
                   onClick={() => setShowTip(!showTip)}
@@ -431,7 +648,7 @@ export default function ListeningPracticePage() {
         {/* Feedback Area */}
         <div className="space-y-6 overflow-auto">
           {/* Answer Explanation */}
-          {showAnswer && (
+          {revealAnswers && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -450,7 +667,23 @@ export default function ListeningPracticePage() {
                   <div>
                     <span className="font-medium">Correct Answer: </span>
                     <span className="text-green-600">
-                      {currentQuestion.options[currentQuestion.correctAnswer]}
+                      {(() => {
+                        const opt = currentQuestion.options[currentQuestion.correctAnswer];
+                        if (typeof opt === "string") {
+                          return opt;
+                        }
+                        // image option: show thumbnail and alt text
+                        return (
+                          <span className="flex items-center gap-2">
+                            <img
+                              src={opt.src}
+                              alt={opt.alt || "correct option"}
+                              className="max-h-20 object-contain rounded"
+                            />
+                            <span className="text-sm text-green-600">{opt.alt}</span>
+                          </span>
+                        );
+                      })()}
                     </span>
                   </div>
                   <div>
@@ -509,9 +742,10 @@ export default function ListeningPracticePage() {
                     <li>• Click Play to listen to the audio</li>
                     <li>• Use volume and speed controls as needed</li>
                     <li>• You can replay the audio multiple times</li>
-                    <li>• Select your answer and click Submit</li>
+                    <li>• Select your answer; it is saved immediately</li>
+                    <li>• Use Previous / Next to navigate between questions</li>
                     <li>
-                      • Use Script to see the audio text (after answering)
+                      • Use Script to see the audio text (available during review)
                     </li>
                   </ul>
                 </AlertDescription>
