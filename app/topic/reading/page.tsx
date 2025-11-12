@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,39 +32,77 @@ export default function ReadingPracticePage() {
     new Set()
   );
   const [correctAnswers, setCorrectAnswers] = useState<Set<number>>(new Set());
+  const [showResults, setShowResults] = useState(false);
+  const [ userAnswers, setUserAnswers] = useState<Record<number, number>>({});
+  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
+  // session timer (seconds)
+  const [sessionSecondsLeft, setSessionSecondsLeft] = useState(60 * 60); // 60 minutes
+  const sessionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentQuestion = topikReadingQuestions[currentQuestionIndex];
   const totalQuestions = topikReadingQuestions.length;
-  const progress = (answeredQuestions.size / totalQuestions) * 100;
+  const progress = totalQuestions ? (answeredQuestions.size / totalQuestions) * 100 : 0;
   const score = correctAnswers.size;
 
   const handleAnswerSelect = (answerIndex: number) => {
-    if (showAnswer) return;
+    // Save selection immediately so it persists when navigating
     setSelectedAnswer(answerIndex);
+    setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: answerIndex }));
+    setAnsweredQuestions((prev) => new Set([...prev, currentQuestion.id]));
+
+    // update correctness tracking
+    if (answerIndex === currentQuestion.correctAnswer) {
+      setCorrectAnswers((prev) => new Set([...prev, currentQuestion.id]));
+    } else {
+      setCorrectAnswers((prev) => {
+        const next = new Set(prev);
+        next.delete(currentQuestion.id);
+        return next;
+      });
+    }
   };
 
   const handleSubmitAnswer = () => {
     if (selectedAnswer === null) return;
 
-    setShowAnswer(true);
+    // record that this question was answered
     setAnsweredQuestions((prev) => new Set([...prev, currentQuestion.id]));
 
+    // Save user's selected answer for review
+    setUserAnswers((prev) => ({ ...prev, [currentQuestion.id]: selectedAnswer }));
+
+    // record correctness for scoring (kept hidden until review/results)
     if (selectedAnswer === currentQuestion.correctAnswer) {
       setCorrectAnswers((prev) => new Set([...prev, currentQuestion.id]));
+    }
+
+    // If this was the last question, show final results
+    if (currentQuestionIndex === totalQuestions - 1) {
+      setShowResults(true);
+      setIsReviewMode(false);
     }
   };
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      resetQuestion();
+      const newIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(newIndex);
+      const nextId = topikReadingQuestions[newIndex].id;
+      const ans = userAnswers[nextId];
+      setSelectedAnswer(ans !== undefined ? ans : null);
+      setShowTip(false);
     }
   };
 
   const handlePrevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-      resetQuestion();
+      const newIndex = currentQuestionIndex - 1;
+      setCurrentQuestionIndex(newIndex);
+      const prevId = topikReadingQuestions[newIndex].id;
+      const ans = userAnswers[prevId];
+      setSelectedAnswer(ans !== undefined ? ans : null);
+      setShowTip(false);
     }
   };
 
@@ -78,8 +116,52 @@ export default function ReadingPracticePage() {
     setCurrentQuestionIndex(0);
     setAnsweredQuestions(new Set());
     setCorrectAnswers(new Set());
+    setShowResults(false);
+    setUserAnswers({});
+    setIsReviewMode(false);
     resetQuestion();
+    // reset session state and return to start screen
+    setSessionSecondsLeft(60 * 60);
+    setSessionStarted(false);
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
+      sessionTimerRef.current = null;
+    }
   };
+
+  // Session timer: start when the sessionStarted flag is set
+  useEffect(() => {
+    if (!sessionStarted) return;
+
+    // start session timer
+    if (sessionTimerRef.current) {
+      clearInterval(sessionTimerRef.current);
+      sessionTimerRef.current = null;
+    }
+    sessionTimerRef.current = setInterval(() => {
+      setSessionSecondsLeft((s) => s - 1);
+    }, 1000);
+
+    return () => {
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+        sessionTimerRef.current = null;
+      }
+    };
+  }, [sessionStarted]);
+
+  // When session timer expires, show results
+  useEffect(() => {
+    if (sessionSecondsLeft <= 0) {
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+        sessionTimerRef.current = null;
+      }
+      // finalize and show results with whatever answers exist
+      setShowResults(true);
+      setIsReviewMode(false);
+    }
+  }, [sessionSecondsLeft]);
 
   const getQuestionTypeColor = (type: TopikQuestion["type"]) => {
     switch (type) {
@@ -111,8 +193,45 @@ export default function ReadingPracticePage() {
     }
   };
 
+  const formatTime = (s: number) => {
+    const total = Math.max(0, s);
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  };
+
+  // Renderer for trusted HTML fragments stored in data (e.g. <u>밑줄</u>)
+  // WARNING: only use with trusted data (no user input) because this uses
+  // dangerouslySetInnerHTML. It also converts newlines to <br/> for spacing.
+  function RenderTrustedHtml({ html }: { html?: string }) {
+    if (!html) return null;
+  // Support simple marker syntax:
+  // - [[...]] -> underline
+  // - **...** -> bold
+  // This keeps source strings plain and avoids embedding raw HTML.
+  // Example: '그는 항상 [[성실하게]] 혹은 **성실하게** 일합니다.'
+  let transformed = html.replace(/\[\[(.+?)\]\]/g, "<u>$1</u>");
+  transformed = transformed.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  const safeHtml = transformed.replace(/\n/g, "<br/>");
+    return (
+      <p
+        className="text-sm leading-relaxed whitespace-pre-line"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+    <div className="relative flex flex-col h-[calc(100vh-2rem)] max-h-screen py-3 px-4">
+      {/* Top-right fixed timer badge */}
+      {sessionStarted && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-white shadow rounded-full px-4 py-2 border border-gray-200 text-sm font-medium text-red-600">
+            {formatTime(sessionSecondsLeft)}
+          </div>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-2">
         <Button
           variant="ghost"
@@ -143,9 +262,6 @@ export default function ReadingPracticePage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">
-                Score: {score}/{answeredQuestions.size}
-              </span>
               <Button
                 variant="outline"
                 size="sm"
@@ -162,143 +278,210 @@ export default function ReadingPracticePage() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 overflow-hidden">
-        {/* Question Area */}
+        {/* Question Area or Results */}
         <div className="lg:col-span-2 flex flex-col overflow-hidden">
-          <Card className="flex flex-col h-full overflow-hidden">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Question {currentQuestionIndex + 1}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge className={getQuestionTypeColor(currentQuestion.type)}>
-                    {currentQuestion.type.replace("_", " ")}
-                  </Badge>
-                  <Badge className={getLevelColor(currentQuestion.level)}>
-                    {currentQuestion.level}
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 flex-1 overflow-auto">
-              {/* Passage (if exists) */}
-              {currentQuestion.passage && (
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium mb-2">Reading Passage:</h3>
-                  <p className="text-sm leading-relaxed whitespace-pre-line">
-                    {currentQuestion.passage}
-                  </p>
-                </div>
-              )}
-
-              {/* Question */}
-              <div>
-                <h3 className="font-medium mb-4">Question:</h3>
-                <p className="text-sm leading-relaxed whitespace-pre-line">
-                  {currentQuestion.question}
-                </p>
-              </div>
-
-              {/* Answer Options */}
-              <div className="space-y-3">
-                <h3 className="font-medium">Choose the correct answer:</h3>
-                {currentQuestion.options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(index)}
-                    disabled={showAnswer}
-                    className={`w-full p-3 text-left rounded-lg border transition-all ${
-                      selectedAnswer === index
-                        ? showAnswer
-                          ? index === currentQuestion.correctAnswer
-                            ? "border-green-500 bg-green-50 text-green-800"
-                            : "border-red-500 bg-red-50 text-red-800"
-                          : "border-primary bg-primary/5"
-                        : showAnswer && index === currentQuestion.correctAnswer
-                        ? "border-green-500 bg-green-50 text-green-800"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    } ${showAnswer ? "cursor-default" : "cursor-pointer"}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-medium">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm">{option}</span>
-                      {showAnswer &&
-                        selectedAnswer === index &&
-                        (selectedAnswer === currentQuestion.correctAnswer ? (
-                          <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-600 ml-auto" />
-                        ))}
-                      {showAnswer &&
-                        selectedAnswer !== index &&
-                        index === currentQuestion.correctAnswer && (
-                          <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
-                        )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                {!showAnswer ? (
-                  <Button
-                    onClick={handleSubmitAnswer}
-                    disabled={selectedAnswer === null}
-                    className="flex-1"
-                  >
-                    Submit Answer
+          {/* If session not started, show start card */}
+          {!sessionStarted ? (
+            <Card className="flex flex-col h-full items-center justify-center p-8">
+              <CardHeader>
+                <CardTitle className="text-2xl">TOPIK Read Mock Test</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-center">
+                <p className="text-lg font-medium">한국어능력시험 토픽 읽기 모의고사</p>
+                <p className="text-sm text-muted-foreground">There are total {totalQuestions} questions and you have 60 minutes to solve them</p>
+                <div className="mt-4">
+                  <Button onClick={() => {
+                    // start session
+                    setSessionStarted(true);
+                    setSessionSecondsLeft(60 * 60);
+                    setCurrentQuestionIndex(0);
+                    setAnsweredQuestions(new Set());
+                    setCorrectAnswers(new Set());
+                    setShowResults(false);
+                    setUserAnswers({});
+                    setIsReviewMode(false);
+                    resetQuestion();
+                  }}>
+                    Start Test
                   </Button>
-                ) : (
-                  <div className="flex gap-3 w-full">
+                </div>
+              </CardContent>
+            </Card>
+          ) : !showResults ? (
+            <Card className="flex flex-col h-full overflow-hidden">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Question {currentQuestionIndex + 1}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getQuestionTypeColor(currentQuestion.type)}>
+                      {currentQuestion.type.replace("_", " ")}
+                    </Badge>
+                    <Badge className={getLevelColor(currentQuestion.level)}>
+                      {currentQuestion.level}
+                    </Badge>
+                    {/* timer moved to fixed top-right for visibility */}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 flex-1 overflow-auto">
+                {/* Passage (if exists) */}
+                {currentQuestion.passage && (
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium mb-2">Reading Passage:</h3>
+                    <RenderTrustedHtml html={currentQuestion.passage} />
+                  </div>
+                )}
+
+                {/* Question */}
+                <div>
+                  <h3 className="font-medium mb-4">Question:</h3>
+                  <RenderTrustedHtml html={currentQuestion.question} />
+                </div>
+
+                {/* Answer Options */}
+                <div className="space-y-3">
+                  <h3 className="font-medium">Choose the correct answer:</h3>
+                  {currentQuestion.options.map((option, index) => {
+                    const revealed = isReviewMode || showResults;
+                    const isSelected = selectedAnswer === index;
+                    let optionClass = "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+
+                    if (isSelected) {
+                      if (revealed) {
+                        optionClass = index === currentQuestion.correctAnswer
+                          ? "border-green-500 bg-green-50 text-green-800"
+                          : "border-red-500 bg-red-50 text-red-800";
+                      } else {
+                        // selected but not revealed (submitted during exam)
+                        optionClass = "border-gray-300 bg-gray-50 text-muted-foreground";
+                      }
+                    } else if (revealed && index === currentQuestion.correctAnswer) {
+                      optionClass = "border-green-500 bg-green-50 text-green-800";
+                    }
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleAnswerSelect(index)}
+                        className={`w-full p-3 text-left rounded-lg border transition-all ${optionClass} cursor-pointer`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-medium">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm">{option}</span>
+                          {revealed && isSelected && (index === currentQuestion.correctAnswer ? (
+                            <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-600 ml-auto" />
+                          ))}
+                          {revealed && !isSelected && index === currentQuestion.correctAnswer && (
+                            <CheckCircle className="h-4 w-4 text-green-600 ml-auto" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Action Buttons: always show Prev/Next; Finish on last question */}
+                <div className="flex gap-3 w-full">
+                  {currentQuestionIndex > 0 ? (
                     <Button
                       variant="outline"
                       onClick={handlePrevQuestion}
-                      disabled={currentQuestionIndex === 0}
                       className="flex items-center gap-2"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
                     </Button>
+                  ) : (
+                    <div />
+                  )}
+
+                  {currentQuestionIndex < totalQuestions - 1 ? (
                     <Button
                       onClick={handleNextQuestion}
-                      disabled={currentQuestionIndex === totalQuestions - 1}
                       className="flex-1 flex items-center gap-2"
                     >
                       Next Question
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                  </div>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTip(!showTip)}
-                  className="flex items-center gap-2"
-                >
-                  <Lightbulb className="h-4 w-4" />
-                  Tip
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        // stop the session timer when user finishes the test
+                        if (sessionTimerRef.current) {
+                          clearInterval(sessionTimerRef.current);
+                          sessionTimerRef.current = null;
+                        }
+                        setSessionStarted(false);
+                        setShowResults(true);
+                        setIsReviewMode(false);
+                      }}
+                      className="flex-1"
+                    >
+                      Finish
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowTip(!showTip)}
+                    className="flex items-center gap-2"
+                  >
+                    <Lightbulb className="h-4 w-4" />
+                    Tip
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="flex flex-col h-full items-center justify-center p-8">
+              <CardHeader>
+                <CardTitle className="text-2xl">You've finished the quiz!</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-center">
+                <p className="text-lg font-medium">Your Score</p>
+                <p className="text-4xl font-bold">{score} / {totalQuestions}</p>
+                <div className="space-x-2 mt-4">
+                  <Button onClick={handleRestart} variant="outline">Restart</Button>
+                  <Button
+                    onClick={() => {
+                      // Enter review mode: hide results and show previous answers
+                      setShowResults(false);
+                      setIsReviewMode(true);
+                      const firstIndex = 0;
+                      setCurrentQuestionIndex(firstIndex);
+                      const firstId = topikReadingQuestions[firstIndex].id;
+                      const firstAns = userAnswers[firstId];
+                      setSelectedAnswer(firstAns !== undefined ? firstAns : null);
+                      setShowAnswer(firstAns !== undefined);
+                    }}
+                  >
+                    Review Answers
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Feedback Area */}
         <div className="space-y-6 overflow-auto">
-          {/* Answer Explanation */}
-          {showAnswer && (
+          {/* Answer Explanation: only reveal in Review mode or after results */}
+          {(isReviewMode || showResults) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {selectedAnswer === currentQuestion.correctAnswer ? (
+                  {((userAnswers[currentQuestion.id] ?? selectedAnswer) === currentQuestion.correctAnswer) ? (
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   ) : (
                     <XCircle className="h-5 w-5 text-red-600" />
                   )}
-                  {selectedAnswer === currentQuestion.correctAnswer
+                  {((userAnswers[currentQuestion.id] ?? selectedAnswer) === currentQuestion.correctAnswer)
                     ? "Correct!"
                     : "Incorrect"}
                 </CardTitle>
@@ -346,12 +529,12 @@ export default function ReadingPracticePage() {
                 <BookOpen className="h-4 w-4" />
                 <AlertDescription>
                   <strong>How to use:</strong>
-                  <ul className="mt-2 space-y-1 text-sm">
+                    <ul className="mt-2 space-y-1 text-sm">
                     <li>• Read the passage and question carefully</li>
-                    <li>• Select your answer from the 4 options</li>
-                    <li>• Click "Submit" to see the correct answer</li>
+                    <li>• Select your answer from the 4 options — your choice is saved immediately and will be restored when you navigate back and forth</li>
+                    <li>• Answers are hidden while the session is active; correct answers and explanations are revealed after the session ends or in Review mode</li>
                     <li>• Use "Tip" for solving strategies</li>
-                    <li>• Navigate between questions with Previous/Next</li>
+                    <li>• Navigate between questions with Previous/Next (first question has no Previous)</li>
                   </ul>
                 </AlertDescription>
               </Alert>
