@@ -40,14 +40,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-        const backendUrl = process.env.BACKEND_URL;
+    const backendUrl = process.env.BACKEND_URL;
     
+    // If no backend URL, return empty data (user data stored locally or in Supabase)
     if (!backendUrl) {
-      console.error('❌ BACKEND_URL environment variable is not set');
-      return NextResponse.json(
-        { message: 'Backend configuration error' },
-        { status: 500 }
-      );
+      console.log('📝 No BACKEND_URL configured, returning empty user data');
+      return NextResponse.json({ 
+        chatHistory: [],
+        preferences: {},
+        progressData: {},
+        message: 'No backend configured - using local storage'
+      });
     }
 
     console.log('🔗 Fetching user data from backend:', `${backendUrl}/users/${userId}/data`);
@@ -57,8 +60,6 @@ export async function GET(request: NextRequest) {
       const response = await fetch(`${backendUrl}/users/${userId}/data`, {
         headers: {
           'Content-Type': 'application/json',
-          // Add authentication header if needed
-          // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
         }
       });
 
@@ -74,10 +75,13 @@ export async function GET(request: NextRequest) {
         }
         
         console.error(`❌ Backend API error: ${response.status} ${response.statusText}`);
-        return NextResponse.json(
-          { error: 'Failed to fetch user data from backend' },
-          { status: response.status }
-        );
+        // Fallback to empty data instead of error
+        return NextResponse.json({ 
+          chatHistory: [],
+          preferences: {},
+          progressData: {},
+          message: 'Backend unavailable, using local storage'
+        });
       }
 
       const backendData = await response.json();
@@ -89,14 +93,16 @@ export async function GET(request: NextRequest) {
         preferences: backendData.preferences || {},
         progressData: backendData.progressData || {},
         lastSeen: backendData.lastSeen,
-        // Add other backend data fields
       });
     } catch (fetchError) {
       console.error('❌ Error fetching from backend:', fetchError);
-      return NextResponse.json(
-        { error: 'Failed to communicate with backend' },
-        { status: 500 }
-      );
+      // Fallback to empty data instead of error
+      return NextResponse.json({ 
+        chatHistory: [],
+        preferences: {},
+        progressData: {},
+        message: 'Backend unavailable, using local storage'
+      });
     }
 
   } catch (error) {

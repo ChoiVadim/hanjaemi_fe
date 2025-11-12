@@ -6,13 +6,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
-import { Bot, User, AlertTriangle, Crown, BookOpen, Lightbulb, Target, Zap } from "lucide-react";
+import { Bot, User, AlertTriangle, Crown } from "lucide-react";
 import { useAuth } from "@/components/context/auth-context";
 import { clearLocalChatData, transformChatHistory } from "@/lib/chat-utils";
 import { useTour } from "@/components/context/tour-context";
@@ -55,6 +53,8 @@ export function Chat({
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [usageError, setUsageError] = useState<UsageLimitError | null>(null);
+  const [sentGrammarMessages, setSentGrammarMessages] = useState<Set<string>>(new Set());
+  const [sentWordMessages, setSentWordMessages] = useState<Set<string>>(new Set());
   const { backendData, loading: authLoading } = useAuth();
   const { startTour } = useTour();
 
@@ -80,21 +80,21 @@ export function Chat({
         setMessages([
           {
             id: generateMessageId(),
-            content: `Hello! I'm your Korean learning partner! 🎓
+            content: `안녕하세요! 👋 I'm your Korean learning partner! 🎓
 
-**What I can help you with:**
+**What I can help you with:** ✨
 
-📚 **Grammar Explanations** - I'll explain complex Korean grammar in simple terms
-📖 **Vocabulary Learning** - Learn new words and how to use them properly
+📚 **Grammar Explanations** - I'll explain complex Korean grammar in simple terms with **bold highlights** and emojis
+📖 **Vocabulary Learning** - Learn new words with **pronunciation tips** and usage examples  
 💬 **Conversation Practice** - Practice natural Korean conversations
 ✍️ **Writing Help** - Get assistance with sentences and essays
 
-**How to use:**
-- Click on grammar or vocabulary items to automatically send questions
-- Type your questions directly to get answers
-- Type "help" anytime to get usage instructions
+**How to use:** 🚀
+• Click on **grammar** or **vocabulary** items to automatically send questions
+• Type your questions directly to get answers
+• Type "help" anytime to get usage instructions
 
-Feel free to ask me anything! Let's improve your Korean together! 💪`,
+Let's improve your Korean together! 💪 화이팅!`,
             sender: "assistant",
           },
         ]);
@@ -104,7 +104,7 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
 
   // Handle grammar selection
   useEffect(() => {
-    if (selectedGrammar) {
+    if (selectedGrammar && !sentGrammarMessages.has(selectedGrammar)) {
       const newMessage: Message = {
         id: generateMessageId(),
         content: `Tell me a little bit more about ${selectedGrammar}!`,
@@ -113,15 +113,38 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
       setMessages((prev) => [...prev, newMessage]);
 
       handleSubmit(
-        newMessage.content +
-          " with 2 real live examples. Make it short as possible. Onyl key moments! Im on level"
+        `Explain "${selectedGrammar}" in Korean grammar with these requirements:
+
+🎯 **Make it visually appealing and engaging:**
+- Use emojis to highlight key points (📚, ⭐, 💡, 🔥, etc.)
+- Use **bold text** for important Korean phrases and rules
+- Use bullet points (•) for clear structure
+- Add visual separators between sections
+
+📝 **Content structure:**
+- Brief explanation (1-2 sentences)
+- **Key rule** with emoji highlight
+- 2 real-life examples with Korean sentences
+- English translations in parentheses
+
+🎨 **Formatting requirements:**
+- Start with a relevant emoji (📖, 🎓, ⭐)
+- Use **bold** for Korean grammar points
+- Use bullet points for rules
+- Keep it concise but informative
+- Make it fun and easy to remember
+
+Level: Beginner-friendly explanation`
       );
+      
+      // Mark this grammar as sent
+      setSentGrammarMessages(prev => new Set(prev).add(selectedGrammar));
     }
-  }, [selectedGrammar]);
+  }, [selectedGrammar, sentGrammarMessages]);
 
   // Handle word selection
   useEffect(() => {
-    if (selectedWord) {
+    if (selectedWord && !sentWordMessages.has(selectedWord)) {
       const newMessage: Message = {
         id: generateMessageId(),
         content: `Can you explain the usage of "${selectedWord}"`,
@@ -129,16 +152,41 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
       };
       setMessages((prev) => [...prev, newMessage]);
       handleSubmit(
-        newMessage.content +
-          "and provide some example sentences? Make it short as possible. Onyl key moments!"
-      );
-    }
-  }, [selectedWord]);
+        `Explain the Korean word "${selectedWord}" with these requirements:
 
-  // Handle loading state
+🎯 **Make it visually appealing and engaging:**
+- Use emojis to highlight key points (📚, ⭐, 💡, 🔥, etc.)
+- Use **bold text** for the Korean word and important meanings
+- Use bullet points (•) for clear structure
+- Add visual separators between sections
+
+📝 **Content structure:**
+- **Word meaning** with emoji highlight
+- **Pronunciation** (if helpful)
+- **Usage notes** and tips
+- 2-3 example sentences with Korean and English
+- **Common mistakes** to avoid (if any)
+
+🎨 **Formatting requirements:**
+- Start with a relevant emoji (📖, 🎓, ⭐)
+- Use **bold** for Korean word and key meanings
+- Use bullet points for different meanings/uses
+- Keep it concise but informative
+- Make it fun and easy to remember
+
+Level: Beginner-friendly explanation`
+      );
+      
+      // Mark this word as sent
+      setSentWordMessages(prev => new Set(prev).add(selectedWord));
+    }
+  }, [selectedWord, sentWordMessages]);
+
+  // Clear sent messages when level changes
   useEffect(() => {
-    onLoadingChange?.(isLoading);
-  }, [isLoading, onLoadingChange]);
+    setSentGrammarMessages(new Set());
+    setSentWordMessages(new Set());
+  }, [level]);
 
   // Handle scrolling to the bottom
   const scrollToBottom = () => {
@@ -278,130 +326,6 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
     setUsageError(null);
   };
 
-  // Enhanced Korean lesson content parser
-  const parseKoreanContent = (content: string) => {
-    const lines = content.split('\n');
-    const parsedContent = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Detect Korean grammar patterns
-      if (line.match(/^[가-힣]+은\/는|^[가-힣]+이\/가|^[가-힣]+을\/를|^[가-힣]+이에요\/예요/)) {
-        parsedContent.push({
-          type: 'korean-grammar',
-          content: line,
-          icon: <BookOpen className="h-4 w-4" />
-        });
-      }
-      // Detect examples (Korean text followed by English in parentheses)
-      else if (line.match(/^[0-9]+\.\s*[가-힣].*\([^)]+\)/)) {
-        const match = line.match(/^([0-9]+\.\s*)([가-힣].*?)\s*\(([^)]+)\)/);
-        if (match) {
-          parsedContent.push({
-            type: 'example',
-            number: match[1],
-            korean: match[2],
-            english: match[3],
-            icon: <Target className="h-4 w-4" />
-          });
-        }
-      }
-      // Detect explanations
-      else if (line.includes('is a Korean phrase') || line.includes('can be translated as') || line.includes('depends on')) {
-        parsedContent.push({
-          type: 'explanation',
-          content: line,
-          icon: <Lightbulb className="h-4 w-4" />
-        });
-      }
-      // Regular paragraphs
-      else if (line) {
-        parsedContent.push({
-          type: 'paragraph',
-          content: line
-        });
-      }
-    }
-    
-    return parsedContent;
-  };
-
-  const renderKoreanContent = (content: string) => {
-    const parsedContent = parseKoreanContent(content);
-    
-    return (
-      <div className="space-y-4">
-        {parsedContent.map((item, index) => {
-          switch (item.type) {
-            case 'korean-grammar':
-              return (
-                <Card key={index} className="border-l-4 border-l-blue-500 bg-blue-50/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                        Grammar Pattern
-                      </Badge>
-                    </div>
-                    <div className="text-lg font-bold text-blue-900 font-mono">
-                      {item.content}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-              
-            case 'example':
-              return (
-                <Card key={index} className="border-l-4 border-l-green-500 bg-green-50/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="h-4 w-4 text-green-600" />
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        Example {item.number}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-lg font-semibold text-green-900">
-                        {item.korean}
-                      </div>
-                      <div className="text-sm text-gray-600 italic">
-                        {item.english}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-              
-            case 'explanation':
-              return (
-                <Card key={index} className="border-l-4 border-l-amber-500 bg-amber-50/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Lightbulb className="h-4 w-4 text-amber-600" />
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                        Explanation
-                      </Badge>
-                    </div>
-                    <div className="text-sm text-gray-700 leading-relaxed">
-                      {item.content}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-              
-            default:
-              return (
-                <div key={index} className="text-sm text-gray-700 leading-relaxed">
-                  {item.content}
-                </div>
-              );
-          }
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="flex flex-col h-full border rounded-lg">
       {/* Usage Limit Alert */}
@@ -457,11 +381,80 @@ Feel free to ask me anything! Let's improve your Korean together! 💪`,
                     : "bg-primary text-primary-foreground"
                 }`}
               >
-                {message.sender === "assistant" ? (
-                  renderKoreanContent(message.content)
-                ) : (
-                  <div className="text-sm whitespace-pre-line">{message.content}</div>
-                )}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                  className={`prose prose-sm max-w-none font-sans ${
+                    message.sender === "assistant"
+                      ? "dark:prose-invert"
+                      : "text-primary-foreground"
+                  } break-words`}
+                  components={{
+                    code: ({
+                      node,
+                      inline,
+                      className,
+                      children,
+                      ...props
+                    }: any) => {
+                      const match = /language-(\w+)/.exec(className || "");
+                      return !inline && match ? (
+                        <div className="not-prose rounded-md overflow-hidden my-2">
+                          <div className="bg-zinc-800 text-xs text-zinc-400 px-3 py-1 border-b border-zinc-700">
+                            {match[1]}
+                          </div>
+                          <pre className="p-0 m-0">
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          </pre>
+                        </div>
+                      ) : (
+                        <code
+                          className="bg-zinc-800/60 px-1.5 py-0.5 rounded text-sm"
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      );
+                    },
+                    pre: ({ children }: any) => {
+                      return <pre className="p-0 m-0">{children}</pre>;
+                    },
+                    p: ({ children }: any) => {
+                      return <p className="mb-2 last:mb-0 font-sans whitespace-pre-line">{children}</p>;
+                    },
+                    br: () => {
+                      return <br />;
+                    },
+                    ul: ({ children }: any) => {
+                      return (
+                        <ul className="list-disc pl-6 mb-2 last:mb-0">
+                          {children}
+                        </ul>
+                      );
+                    },
+                    ol: ({ children }: any) => {
+                      return (
+                        <ol className="list-decimal pl-6 mb-2 last:mb-0">
+                          {children}
+                        </ol>
+                      );
+                    },
+                    li: ({ children }: any) => {
+                      return <li className="mb-1 last:mb-0">{children}</li>;
+                    },
+                    blockquote: ({ children }: any) => {
+                      return (
+                        <blockquote className="border-l-2 border-zinc-500 pl-4 italic">
+                          {children}
+                        </blockquote>
+                      );
+                    },
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
               </div>
             </div>
           ))}

@@ -36,45 +36,57 @@ export async function POST(request: NextRequest) {
     
     const backendUrl = process.env.BACKEND_URL;
     
+    // If no backend URL, return success without syncing
     if (!backendUrl) {
-      console.error('❌ BACKEND_URL environment variable is not set');
-      return NextResponse.json(
-        { error: 'Backend configuration error' },
-        { status: 500 }
-      );
+      console.log('📝 No BACKEND_URL configured, skipping sync');
+      return NextResponse.json({
+        success: true,
+        message: 'No backend configured - sync skipped',
+        data: { supabaseId: user.id }
+      });
     }
 
     console.log('🔗 Syncing user with backend:', `${backendUrl}/sync`);
 
     // Send to backend - only user ID for verification
-    const backendResponse = await fetch(`${backendUrl}/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add authentication header if needed
-        // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
-      },
-      body: JSON.stringify({
-        supabaseId: user.id
-      })
-    });
+    try {
+      const backendResponse = await fetch(`${backendUrl}/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          supabaseId: user.id
+        })
+      });
 
-    if (!backendResponse.ok) {
-      console.error(`❌ Backend sync failed: ${backendResponse.status} ${backendResponse.statusText}`);
-      return NextResponse.json(
-        { error: 'Failed to sync user with backend' },
-        { status: backendResponse.status }
-      );
+      if (!backendResponse.ok) {
+        console.error(`❌ Backend sync failed: ${backendResponse.status} ${backendResponse.statusText}`);
+        // Return success anyway to not break the flow
+        return NextResponse.json({
+          success: true,
+          message: 'Backend sync failed, but continuing',
+          data: { supabaseId: user.id }
+        });
+      }
+
+      const backendData = await backendResponse.json();
+      console.log('✅ Successfully synced user with backend');
+
+      return NextResponse.json({
+        success: true,
+        message: 'User synced successfully',
+        data: backendData
+      });
+    } catch (error) {
+      console.error('❌ Error during backend sync:', error);
+      // Return success anyway to not break the flow
+      return NextResponse.json({
+        success: true,
+        message: 'Backend sync error, but continuing',
+        data: { supabaseId: user.id }
+      });
     }
-
-    const backendData = await backendResponse.json();
-    console.log('✅ Successfully synced user with backend');
-
-    return NextResponse.json({
-      success: true,
-      message: 'User synced successfully',
-      data: backendData
-    });
 
   } catch (error) {
     console.error('❌ Error syncing user:', error);

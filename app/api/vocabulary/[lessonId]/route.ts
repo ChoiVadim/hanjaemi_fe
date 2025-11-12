@@ -1,42 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchLessonData } from '@/data/dataService';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { lessonId: string } }
 ) {
   try {
-    const backendUrl = process.env.BACKEND_URL;
+    // Parse lessonId format: "difficultyId-lessonNumber" or just lesson number
+    const parts = params.lessonId.split('-');
+    let difficultyId: string;
+    let lessonNumber: string;
     
-    if (!backendUrl) {
-      console.error('❌ BACKEND_URL environment variable is not set');
+    if (parts.length >= 2) {
+      difficultyId = parts[0];
+      lessonNumber = parts.slice(1).join('-');
+    } else {
+      // If no difficulty ID, try to find the lesson across all difficulties
+      // For now, return error - we need difficulty ID
       return NextResponse.json(
-        { message: 'Backend configuration error' },
-        { status: 500 }
+        { message: 'Lesson ID must include difficulty ID (format: difficultyId-lessonNumber)' },
+        { status: 400 }
       );
     }
 
-    console.log('🔗 Fetching vocabulary from backend:', `${backendUrl}/vocabulary?lessonId=${params.lessonId}`);
-
-    const response = await fetch(`${backendUrl}/vocabulary?lessonId=${params.lessonId}`, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add authentication header if needed
-        // 'Authorization': `Bearer ${process.env.BACKEND_SECRET}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.error(`❌ Backend API error: ${response.status} ${response.statusText}`);
+    console.log('📚 Fetching vocabulary from local JSON data for lesson:', { difficultyId, lessonNumber });
+    const lesson = await fetchLessonData(difficultyId, lessonNumber);
+    
+    if (!lesson) {
       return NextResponse.json(
-        { message: 'Failed to fetch vocabulary from backend' },
-        { status: response.status }
+        { message: 'Lesson not found' },
+        { status: 404 }
       );
     }
-
-    const data = await response.json();
-    console.log('✅ Successfully fetched vocabulary from backend');
-    return NextResponse.json(data);
+    
+    console.log('✅ Successfully fetched vocabulary from local data');
+    return NextResponse.json(lesson.vocabulary || []);
   } catch (error) {
     console.error('Vocabulary API error:', error);
     return NextResponse.json(

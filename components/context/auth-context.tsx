@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useEffect, useState } from "react";
+import { createContext, useContext, ReactNode, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { clearLocalChatData } from "@/lib/chat-utils";
-import { useTour } from "./tour-context";
-import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { useAuthStore } from "@/store/auth-store";
+import type { Session } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -25,7 +25,6 @@ interface User {
 interface BackendUserData {
   chatHistory?: any[];
   preferences?: any;
-  // Add other backend data types here
 }
 
 interface AuthContextType {
@@ -50,83 +49,33 @@ const AuthContext = createContext<AuthContextType>({
   refreshBackendData: async () => {},
 });
 
+// Compatibility provider that wraps Zustand store
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [backendData, setBackendData] = useState<BackendUserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [syncingBackend, setSyncingBackend] = useState(false);
-  
-  const supabase = createClient();
-
-  // Sync user with backend
-  const syncUserWithBackend = async (userSession?: Session) => {
-    const currentSession = userSession || session;
-    if (!currentSession?.user) return;
-
-    console.log('🔗 Syncing user with backend...');
-    console.log('🆔 Sending Supabase User ID to backend:', currentSession.user.id);
-
-    setSyncingBackend(true);
-    try {
-      const response = await fetch('/api/users/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentSession.access_token}`
-        },
-        body: JSON.stringify({
-          supabaseId: currentSession.user.id
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to sync user with backend');
-      }
-
-      const data = await response.json();
-      console.log('✅ User synced with backend:', data);
-      
-      // Fetch user's backend data
-      await refreshBackendData(currentSession);
-    } catch (error) {
-      console.error('❌ Error syncing user with backend:', error);
-    } finally {
-      setSyncingBackend(false);
-    }
-  };
-
-  // Fetch user data from backend
-  const refreshBackendData = async (userSession?: Session) => {
-    const currentSession = userSession || session;
-    if (!currentSession?.user) return;
-
-    try {
-      const response = await fetch(`/api/users/data?userId=${currentSession.user.id}`, {
-        headers: {
-          'Authorization': `Bearer ${currentSession.access_token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setBackendData(data);
-        console.log('📊 Backend data loaded:', data);
-      }
-    } catch (error) {
-      console.error('❌ Error fetching backend data:', error);
-    }
-  };
+  const {
+    user,
+    session,
+    backendData,
+    loading,
+    syncingBackend,
+    signOut,
+    syncUserWithBackend,
+    refreshBackendData,
+    setUser,
+    setSession,
+    setLoading,
+    setBackendData,
+  } = useAuthStore();
 
   useEffect(() => {
     // Clear old localStorage chat data when auth context initializes
     clearLocalChatData();
     
-    // Get initial session
+    // Initialize auth state
+    const supabase = createClient();
+    
     const getInitialSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Log initial session info
       if (session?.user) {
         console.log('🔄 Initial session found');
         console.log('🆔 Supabase User ID:', session.user.id);
@@ -137,13 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
       
-      // If user is logged in, sync with backend
       if (session?.user) {
         await syncUserWithBackend(session);
       }
-      
-      setLoading(false);
     };
 
     getInitialSession();
@@ -153,7 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event: string, session: Session | null) => {
         console.log('🔄 Auth state changed:', event);
         
-        // Log Supabase user ID when user logs in
         if (session?.user) {
           console.log('🆔 Supabase User ID:', session.user.id);
           console.log('📧 User Email:', session.user.email);
@@ -164,7 +110,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle auth state changes
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('✅ User signed in, syncing with backend...');
           await syncUserWithBackend(session);
@@ -178,10 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   const authValue: AuthContextType = {
     user,
     session,
@@ -189,8 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     syncingBackend,
     signOut,
-    syncUserWithBackend,
-    refreshBackendData,
+    syncUserWithBackend: () => syncUserWithBackend(),
+    refreshBackendData: () => refreshBackendData(),
   };
 
   return (

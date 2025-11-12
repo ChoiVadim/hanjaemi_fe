@@ -12,12 +12,10 @@ import { Summary } from "@/components/summary";
 import { Test } from "@/components/exam";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import {
-  fetchLessonData,
-  fetchLessonsForDifficultyFromAPI,
-  Lesson,
-} from "@/data/dataService";
+import type { Lesson } from "@/data/dataService";
 import { useTour } from "@/components/context/tour-context";
+import { useLessons } from "@/hooks/use-lessons";
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 export default function LevelPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -26,93 +24,49 @@ export default function LevelPage({ params }: { params: { id: string } }) {
   const [selectedGrammar, setSelectedGrammar] = useState<string | null>(null);
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [currentLessonData, setCurrentLessonData] = useState<Lesson | null>(
-    null
-  );
-  const [lessons, setLessons] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("1");
-  const [isLoading, setIsLoading] = useState(true);
   const [summarySections, setSummarySections] = useState<
     { id: string; title: string; content: string[] }[]
   >([]);
 
-  // Load lessons for the difficulty
-  useEffect(() => {
-    const loadLessons = async () => {
-      try {
-        setIsLoading(true);
-        const lessonsData = await fetchLessonsForDifficultyFromAPI(params.id);
-        // Sort lessons by number to ensure consistent order
-        const sortedLessons = lessonsData.sort(
-          (a, b) => a.number - b.number
-        );
-        setLessons(sortedLessons);
-        if (sortedLessons.length > 0) {
-          setSelectedLessonId(sortedLessons[0].number?.toString() || "1");
-        }
-      } catch (error) {
-        console.error("Error loading lessons:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Use TanStack Query for lessons
+  const { data: lessons = [], isLoading } = useLessons(params.id);
+  const { data: profile } = useUserProfile();
 
-    loadLessons();
-  }, [params.id]);
+  // Set initial selected lesson when lessons load
+  useEffect(() => {
+    if (lessons.length > 0 && !selectedLessonId) {
+      setSelectedLessonId(lessons[0].number?.toString() || "1");
+    }
+  }, [lessons, selectedLessonId]);
 
   // Continue lesson page tour when page loads (only for new users)
   useEffect(() => {
-    const checkUserAndStartTour = async () => {
-      if (!isLoading && lessons.length > 0) {
-        try {
-          // Check if user is new from database
-          const response = await fetch('/api/users/profile', {
-            method: 'GET',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          });
-          
-          if (response.ok) {
-            const profile = await response.json();
-            
-            // Show lesson tour if user completed main tour but not lesson tour
-            if (!profile.is_new_user && !profile.lesson_tour_completed) {
-              console.log('User completed main tour but not lesson tour, starting lesson tour');
-              const timer = setTimeout(() => {
-                continueLessonTour();
-              }, 1000);
-              return () => clearTimeout(timer);
-            } else if (profile.is_new_user) {
-              console.log('New user on lesson page, skipping lesson tour (should complete main tour first)');
-            } else if (profile.lesson_tour_completed) {
-              console.log('User already completed lesson tour, skipping');
-            }
-          } else {
-            console.log('Failed to fetch profile, skipping lesson tour');
-          }
-        } catch (error) {
-          console.error('Error checking user status for lesson tour:', error);
-          console.log('Error checking user status, skipping lesson tour');
-        }
+    if (!isLoading && lessons.length > 0 && profile) {
+      // Show lesson tour if user completed main tour but not lesson tour
+      if (!profile.is_new_user && !profile.lesson_tour_completed) {
+        console.log('User completed main tour but not lesson tour, starting lesson tour');
+        const timer = setTimeout(() => {
+          continueLessonTour();
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else if (profile.is_new_user) {
+        console.log('New user on lesson page, skipping lesson tour (should complete main tour first)');
+      } else if (profile.lesson_tour_completed) {
+        console.log('User already completed lesson tour, skipping');
       }
-    };
+    }
+  }, [isLoading, lessons.length, profile, continueLessonTour]);
 
-    checkUserAndStartTour();
-  }, [isLoading, lessons.length, continueLessonTour]);
-
-  // Load current lesson data from the lessons array
-  useEffect(() => {
-    if (!selectedLessonId || lessons.length === 0) return;
+  // Get current lesson data and parse summaries
+  const currentLessonData = useMemo(() => {
+    if (!selectedLessonId || lessons.length === 0) return null;
 
     const selectedLesson = lessons.find(
       (lesson) => lesson.number.toString() === selectedLessonId
     );
+    
     if (selectedLesson) {
-      // The lesson data is already in the correct format from our JSON data
-      setCurrentLessonData(selectedLesson);
-
       // Extract summaries from the selected lesson data
       if (selectedLesson.summaries && Array.isArray(selectedLesson.summaries)) {
         const first = selectedLesson.summaries[0];
@@ -121,10 +75,14 @@ export default function LevelPage({ params }: { params: { id: string } }) {
         );
         setSummarySections(parsed);
       } else {
-        setSummarySections([]); // Clear summaries if none found
+        setSummarySections([]);
       }
+      
+      return selectedLesson;
     }
-  }, [selectedLessonId, lessons, params.id]);
+    
+    return null;
+  }, [selectedLessonId, lessons]);
 
   function parseSummaryContent(
     raw: string

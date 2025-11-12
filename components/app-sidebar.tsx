@@ -4,33 +4,21 @@ import {
   Home,
   Youtube,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUpCircle,
-  Bell,
-  CreditCard,
   User,
   FileText,
   MessageCircle,
+  MessageSquare,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+  SidebarBody,
+} from "@/components/ui/animated-sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { JaemiLogo } from "@/components/jaemi-logo";
 import { useAuth } from "@/components/context/auth-context";
 import { useTranslation, TranslationKeys } from "@/lib/i18n";
+import { motion, AnimatePresence } from "framer-motion";
 
 const platformItems = [
   {
@@ -79,7 +68,10 @@ type ChatHistoryItem = {
 export function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { open, setOpen, toggleSidebar } = useSidebar();
+  const [open, setOpen] = useState(false);
+  const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const { user, signOut, backendData, loading: authLoading } = useAuth();
   const { t } = useTranslation();
 
@@ -110,103 +102,140 @@ export function AppSidebar() {
     router.push("/");
   };
 
+  // Обработка открытия/закрытия dropdown меню
+  const handleDropdownOpenChange = (open: boolean) => {
+    setIsDropdownOpen(open);
+    if (open) {
+      // При открытии dropdown закрываем сайдбар
+      setOpen(false);
+    }
+  };
+
+  // Обработка наведения на dropdown меню
+  const handleDropdownEnter = () => {
+    setIsDropdownHovered(true);
+    // Отменяем любые запланированные закрытия сайдбара
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+  };
+
+  const handleDropdownLeave = () => {
+    setIsDropdownHovered(false);
+    // Закрываем сайдбар с задержкой после ухода с dropdown
+    // Если курсор вернется на сайдбар, закрытие отменится
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeoutRef.current) {
+        clearTimeout(dropdownTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Create platform links for animated sidebar
+  const platformLinks = platformItems.map((item) => ({
+    label: t(item.titleKey as keyof TranslationKeys),
+    href: item.href,
+    icon: (
+      <item.icon className={cn(
+        "h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200",
+        pathname === item.href && "text-primary"
+      )} />
+    ),
+  }));
+
   return (
-    <div className="flex relative">
-      <Sidebar
-        className={cn(
-          "border-r border-border bg-sidebar transition-all duration-300 ease-in-out",
-          open ? "w-64 min-w-[16rem]" : "w-[60px] min-w-[60px]"
-        )}
-        collapsible="none"
-      >
-        <SidebarHeader
-          className={cn(
-            "flex transition-all duration-300 ease-in-out",
-            open ? "justify-between px-5 py-3" : "justify-center py-3"
-          )}
-        >
+    <Sidebar 
+      open={open} 
+      setOpen={setOpen}
+      isDropdownHovered={isDropdownHovered}
+      setIsDropdownHovered={setIsDropdownHovered}
+      isDropdownOpen={isDropdownOpen}
+    >
+      <SidebarBody className="justify-between gap-4 border-r border-border bg-sidebar h-full">
+        <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden gap-4">
+          {/* Logo Section */}
           {open ? (
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 py-2">
               <div className="flex h-8 w-8 items-center justify-center">
                 <JaemiLogo size={28} />
               </div>
-              <div className="flex flex-col text-left">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col text-left"
+              >
                 <h1 className="text-sm font-semibold">HanJaemi</h1>
-                <p className="text-xs text-muted-foreground">Learning Korean</p>
-              </div>
+                <p className="text-xs text-muted-foreground">Korean Learning Platform</p>
+              </motion.div>
             </Link>
           ) : (
-            <Link href="/" className="flex items-center justify-center">
+            <Link href="/" className="flex items-center justify-center py-2">
               <div className="flex h-10 w-10 items-center justify-center">
                 <JaemiLogo size={32} />
               </div>
             </Link>
           )}
-        </SidebarHeader>
 
-        <SidebarContent
-          className={cn(
-            "transition-all duration-300 ease-in-out",
-            open ? "px-2" : ""
-          )}
-        >
-          <SidebarGroup>
-            {open && (
-              <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-                {t('common.platform')}
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              {open ? (
-                <SidebarMenu>
-                  {platformItems.map((item) => (
-                    <SidebarMenuItem key={item.titleKey}>
-                      <SidebarMenuButton
-                        asChild
-                        title={t(item.titleKey as keyof TranslationKeys)}
-                        className={cn(
-                          "transition-all duration-300 ease-in-out h-9 justify-start gap-2 px-3 rounded-none border-0 outline-none shadow-none ring-0",
-                          pathname === item.href
-                            ? "bg-accent text-accent-foreground"
-                            : "hover:bg-accent/50"
-                        )}
-                      >
-                        <Link href={item.href} className="flex items-center">
-                          <item.icon className="shrink-0 h-4 w-4 border-0 outline-none shadow-none" />
-                          <span>{t(item.titleKey as keyof TranslationKeys)}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              ) : (
-                <div className="flex flex-col items-center gap-1 py-3">
-                  {platformItems.map((item) => (
-                    <Link
-                      key={item.titleKey}
-                      href={item.href}
-                      className={cn(
-                        "h-10 w-10 flex items-center justify-center rounded-none border-0 outline-none shadow-none ring-0 transition-all duration-300 ease-in-out",
-                        pathname === item.href
-                          ? "bg-accent text-accent-foreground"
-                          : "hover:bg-accent/50"
-                      )}
-                      title={t(item.titleKey as keyof TranslationKeys)}
-                    >
-                      <item.icon className="h-5 w-5 border-0 outline-none shadow-none" />
-                    </Link>
-                  ))}
-                </div>
+          {/* Platform Links */}
+          <div className="flex flex-col gap-1">
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-xs font-normal text-muted-foreground mb-2 px-1"
+                >
+                  {t('common.platform')}
+                </motion.div>
               )}
-            </SidebarGroupContent>
-          </SidebarGroup>
+            </AnimatePresence>
+            <div className="flex flex-col gap-1">
+              {platformLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "flex items-center justify-start gap-2 group/sidebar py-2 px-1 rounded-md transition-colors",
+                    pathname === link.href
+                      ? "bg-accent text-accent-foreground"
+                      : "hover:bg-accent/50"
+                  )}
+                >
+                  {link.icon}
+                  <motion.span
+                    animate={{
+                      display: open ? "inline-block" : "none",
+                      opacity: open ? 1 : 0,
+                    }}
+                    className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre"
+                  >
+                    {link.label}
+                  </motion.span>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-          {open && (
-            <SidebarGroup className="pt-3">
-              <SidebarGroupLabel className="text-xs font-normal text-muted-foreground">
-                {t('common.chatHistory')}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
+          {/* Chat History Section */}
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex flex-col gap-2 pt-2"
+              >
+                <div className="text-xs font-normal text-muted-foreground px-1">
+                  {t('common.chatHistory')}
+                </div>
                 {authLoading ? (
                   <div className="px-3 py-2">
                     <div className="text-xs text-muted-foreground animate-pulse">{t('common.loading')}</div>
@@ -214,50 +243,47 @@ export function AppSidebar() {
                 ) : formattedChatHistory.length > 0 ? (
                   <ScrollArea className="h-48">
                     <TooltipProvider>
-                      <SidebarMenu>
+                      <div className="flex flex-col gap-1">
                         {formattedChatHistory.map((chat) => (
-                          <SidebarMenuItem key={chat.id}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SidebarMenuButton
-                                  className="h-auto min-h-[36px] justify-start gap-2 px-3 py-2 hover:bg-accent/50 cursor-pointer transition-colors"
-                                  onClick={() => {
-                                    // Navigate to study page to see chat
-                                    router.push('/study');
-                                  }}
-                                >
-                                  <MessageCircle className="shrink-0 h-3 w-3 text-muted-foreground" />
-                                  <div className="flex flex-col gap-0.5 text-left flex-1 min-w-0">
-                                    <span className="text-xs font-medium truncate">
-                                      {chat.title}
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground">
-                                      {chat.createdAt.toLocaleDateString()} • 
-                                      {chat.lessonContext ? ` Lesson ${chat.lessonContext}` : ' General'}
-                                    </span>
-                                  </div>
-                                </SidebarMenuButton>
-                              </TooltipTrigger>
-                              <TooltipContent side="right" className="max-w-xs">
-                                <div className="space-y-1">
-                                  <p className="font-semibold text-xs text-primary">Question:</p>
-                                  <p className="text-xs">{chat.fullMessage}</p>
-                                  {chat.response && (
-                                    <>
-                                      <p className="font-semibold text-xs text-primary pt-2">Response:</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {chat.response.length > 150 
-                                          ? `${chat.response.substring(0, 150)}...` 
-                                          : chat.response}
-                                      </p>
-                                    </>
-                                  )}
+                          <Tooltip key={chat.id}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="h-auto min-h-[36px] flex items-start gap-2 px-3 py-2 hover:bg-accent/50 cursor-pointer transition-colors rounded-md"
+                                onClick={() => {
+                                  router.push('/study');
+                                }}
+                              >
+                                <MessageCircle className="shrink-0 h-3 w-3 text-muted-foreground mt-1" />
+                                <div className="flex flex-col gap-0.5 text-left flex-1 min-w-0">
+                                  <span className="text-xs font-medium truncate">
+                                    {chat.title}
+                                  </span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {chat.createdAt.toLocaleDateString()} • 
+                                    {chat.lessonContext ? ` Lesson ${chat.lessonContext}` : ' General'}
+                                  </span>
                                 </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </SidebarMenuItem>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <div className="space-y-1">
+                                <p className="font-semibold text-xs text-primary">Question:</p>
+                                <p className="text-xs">{chat.fullMessage}</p>
+                                {chat.response && (
+                                  <>
+                                    <p className="font-semibold text-xs text-primary pt-2">Response:</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {chat.response.length > 150 
+                                        ? `${chat.response.substring(0, 150)}...` 
+                                        : chat.response}
+                                    </p>
+                                  </>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         ))}
-                      </SidebarMenu>
+                      </div>
                     </TooltipProvider>
                   </ScrollArea>
                 ) : (
@@ -270,50 +296,55 @@ export function AppSidebar() {
                     </div>
                   </div>
                 )}
-              </SidebarGroupContent>
-            </SidebarGroup>
-          )}
-        </SidebarContent>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        <SidebarFooter className="mt-auto">
+        {/* Footer with User Profile */}
+        <div 
+          className="mt-auto border-t pt-2"
+          onMouseEnter={() => {
+            // Отменяем закрытие при возврате на сайдбар
+            if (dropdownTimeoutRef.current) {
+              clearTimeout(dropdownTimeoutRef.current);
+              dropdownTimeoutRef.current = null;
+            }
+            handleDropdownEnter();
+          }}
+          onMouseLeave={handleDropdownLeave}
+        >
           {open ? (
-            <DropdownMenu>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={handleDropdownOpenChange}>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="w-full flex items-center justify-between p-3 h-auto rounded-none border-t"
-                >
+                <div className="w-full flex items-center justify-between p-3 h-auto cursor-pointer hover:bg-accent/50 rounded-md transition-colors">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8 rounded">
-                      <AvatarImage
-                        src={user?.user_metadata?.avatar_url || "https://github.com/shadcn.png"}
-                        alt="user"
-                      />
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start text-left">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col items-start text-left"
+                    >
                       <span className="text-sm">{user?.user_metadata?.full_name || "User"}</span>
                       <span className="text-xs text-muted-foreground">
                         {user?.email || "No email"}
                       </span>
-                    </div>
+                    </motion.div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Button>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
                 side="right"
                 className="w-56 ml-1"
                 sideOffset={0}
+                onMouseEnter={handleDropdownEnter}
+                onMouseLeave={handleDropdownLeave}
               >
-                <DropdownMenuItem className="flex gap-2 items-center">
-                  <ArrowUpCircle className="h-4 w-4" />
-                  <span>{t('common.upgradeToPro')}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem className="flex gap-2 items-center" asChild>
                   <Link href="/settings">
                     <User className="h-4 w-4" />
@@ -321,12 +352,12 @@ export function AppSidebar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex gap-2 items-center">
-                  <CreditCard className="h-4 w-4" />
-                  <span>{t('common.billing')}</span>
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Фидбек</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex gap-2 items-center">
-                  <Bell className="h-4 w-4" />
-                  <span>{t('common.notifications')}</span>
+                  <HelpCircle className="h-4 w-4" />
+                  <span>Инструкция</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -339,77 +370,51 @@ export function AppSidebar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex flex-col">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="py-3 flex justify-center cursor-pointer">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage
-                        src={user?.user_metadata?.avatar_url || "https://github.com/shadcn.png"}
-                        alt="user"
-                      />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  side="right"
-                  className="w-56 ml-1"
-                  sideOffset={0}
+            <DropdownMenu open={isDropdownOpen} onOpenChange={handleDropdownOpenChange}>
+              <DropdownMenuTrigger asChild>
+                <div className="py-2 flex justify-center cursor-pointer hover:bg-accent/50 rounded-md transition-colors">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                side="right"
+                className="w-56 ml-1"
+                sideOffset={0}
+                onMouseEnter={handleDropdownEnter}
+                onMouseLeave={handleDropdownLeave}
+              >
+                <DropdownMenuItem className="flex gap-2 items-center" asChild>
+                  <Link href="/settings">
+                    <User className="h-4 w-4" />
+                    <span>{t('common.account')}</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex gap-2 items-center">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Feedback</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex gap-2 items-center">
+                  <HelpCircle className="h-4 w-4" />
+                  <span>Instruction</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="flex gap-2 items-center"
                 >
-                  <DropdownMenuItem className="flex gap-2 items-center">
-                    <ArrowUpCircle className="h-4 w-4" />
-                    <span>{t('common.upgradeToPro')}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex gap-2 items-center" asChild>
-                    <Link href="/settings">
-                      <User className="h-4 w-4" />
-                      <span>{t('common.account')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex gap-2 items-center">
-                    <CreditCard className="h-4 w-4" />
-                    <span>{t('common.billing')}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex gap-2 items-center">
-                    <Bell className="h-4 w-4" />
-                    <span>{t('common.notifications')}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="flex gap-2 items-center"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>{t('common.logout')}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                  <LogOut className="h-4 w-4" />
+                  <span>{t('common.logout')}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
-        </SidebarFooter>
-      </Sidebar>
-
-      {/* Toggle button positioned to the right of the sidebar */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleSidebar}
-        className="absolute top-4 h-6 w-6 rounded-full bg-background border shadow-sm z-50 transition-all duration-300"
-        style={{
-          left: open ? "calc(var(--sidebar-width) - 12px)" : "46px",
-        }}
-      >
-        {open ? (
-          <ChevronLeft className="h-3 w-3" />
-        ) : (
-          <ChevronRight className="h-3 w-3" />
-        )}
-      </Button>
-    </div>
+        </div>
+      </SidebarBody>
+    </Sidebar>
   );
 }

@@ -418,9 +418,19 @@ export async function fetchLessonData(difficultyId: string, lessonId: string): P
       return null;
     }
     
-    const lesson = levelData.lessons.find((l: any) => l.id === `lesson-${difficultyId}-${lessonId}`);
+    // Try to find lesson by ID format "lesson-{difficultyId}-{lessonId}" or by number
+    let lesson = levelData.lessons.find((l: any) => l.id === `lesson-${difficultyId}-${lessonId}`);
+    
+    // If not found, try to find by lesson number
     if (!lesson) {
-      console.warn(`No lesson found with ID lesson-${difficultyId}-${lessonId}`);
+      const lessonNumber = parseInt(lessonId, 10);
+      if (!isNaN(lessonNumber)) {
+        lesson = levelData.lessons.find((l: any) => l.number === lessonNumber);
+      }
+    }
+    
+    if (!lesson) {
+      console.warn(`No lesson found with ID lesson-${difficultyId}-${lessonId} or number ${lessonId}`);
       return null;
     }
     

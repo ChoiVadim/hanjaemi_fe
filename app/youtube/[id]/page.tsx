@@ -14,6 +14,7 @@ import { Test } from "@/components/exam";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertCircle, FileX } from "lucide-react";
 import { convertTimestampToSeconds } from "@/lib/utils";
+import { useYouTubeData } from "@/hooks/use-youtube-data";
 import "react-loading-skeleton/dist/skeleton.css";
 
 export default function StudyPage({
@@ -29,12 +30,6 @@ export default function StudyPage({
   const [activeTab, setActiveTab] = useState("chat");
   const videoRef = useRef<HTMLDivElement>(null);
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
-  const [studyData, setStudyData] = useState<{
-    grammar: any[];
-    vocabulary: any[];
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [noSubtitles, setNoSubtitles] = useState(false);
 
   useEffect(() => {
@@ -79,70 +74,17 @@ export default function StudyPage({
     }
   }, [id]);
 
+  // Use TanStack Query for YouTube data
+  const { data: studyData, isLoading, error: queryError } = useYouTubeData(id);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setNoSubtitles(false);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_YT_API_URL || 'https://backend-fastapi-94xx.onrender.com'}/api/grammar-and-vocabulary/${id}`
-        );
-
-        if (!response.ok) {
-          // Handle 404 or other error responses
-          if (response.status === 404) {
-            setNoSubtitles(true);
-            return;
-          }
-          
-          const errorData = await response.json().catch(() => null);
-          if (errorData?.error === "No transcript found for this video ID") {
-            setNoSubtitles(true);
-            return;
-          }
-          throw new Error("Failed to fetch study data");
-        }
-
-        const data = await response.json();
-        
-        // Transform YouTube API data to match component expectations
-        const transformedData = {
-          grammar: data.grammar?.map((item: any) => ({
-            id: item.id || item.grammar_id?.toString() || Math.random().toString(),
-            title: item.title,
-            description: item.description,
-            descriptionKorean: item.descriptionKorean,
-            descriptionEnglish: item.descriptionEnglish,
-            example: item.example,
-            examples: item.example ? [item.example] : item.examples || [],
-            translation: item.translation,
-            translations: item.translation ? [item.translation] : item.translations || [],
-            type: item.type || item.difficulty || 'common',
-            timestamp: item.timestamp
-          })) || [],
-          vocabulary: data.vocabulary?.map((item: any) => ({
-            id: item.id || item.vocab_id?.toString() || Math.random().toString(),
-            word: item.word,
-            meaning: item.meaning,
-            context: item.context,
-            type: item.type || 'common',
-            timestamp: item.timestamp,
-            examples: item.examples || [],
-            translations: item.translations || []
-          })) || []
-        };
-        
-        setStudyData(transformedData);
-      } catch (error) {
-        console.error(error);
-        setError("Failed to load study data");
-      } finally {
-        setIsLoading(false);
+    if (queryError) {
+      const errorMessage = queryError instanceof Error ? queryError.message : String(queryError);
+      if (errorMessage === "NO_SUBTITLES" || errorMessage === "NOT_FOUND") {
+        setNoSubtitles(true);
       }
-    };
-
-    fetchData();
-  }, [id]);
+    }
+  }, [queryError]);
 
   const handleBack = () => {
     if (type === "youtube") {

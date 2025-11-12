@@ -1,5 +1,5 @@
 import { useAuth } from "@/components/context/auth-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
@@ -25,7 +25,6 @@ export function UserProfile() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Avatar>
-            <AvatarImage src={user.user_metadata?.avatar_url} />
             <AvatarFallback>
               {user.user_metadata?.full_name?.[0] || user.email?.[0] || 'U'}
             </AvatarFallback>

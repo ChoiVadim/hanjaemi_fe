@@ -11,7 +11,7 @@ import { Settings, Bell, Mail, Target, Clock } from 'lucide-react';
 import { userService } from '@/lib/services/userService';
 import { useTranslation } from '@/lib/i18n';
 import { UserSettings } from '@/lib/types/database';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 export function UserSettingsComponent() {
   const { t } = useTranslation();
