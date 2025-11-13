@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceSupabaseClient } from '@/lib/supabase/server'
 import { sendTelegramMessage, formatWaitlistNotification } from '@/lib/telegram'
 
 export async function POST(request: NextRequest) {
@@ -16,19 +16,26 @@ export async function POST(request: NextRequest) {
     // Normalize email
     const normalizedEmail = email.toLowerCase().trim()
 
-    // Use createClient directly for service role operations
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    // Check for required environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Missing Supabase environment variables')
+      console.error('Missing:', {
+        url: !supabaseUrl ? 'NEXT_PUBLIC_SUPABASE_URL' : null,
+        key: !supabaseServiceKey ? 'SUPABASE_SERVICE_ROLE_KEY' : null
+      })
       return NextResponse.json(
-        { error: 'Server configuration error' },
+        { 
+          error: 'Server configuration error',
+          details: 'Missing required Supabase environment variables. Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
+        },
         { status: 500 }
       )
     }
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createServiceSupabaseClient()
 
     // Check if email already exists
     const { data: existing, error: checkError } = await supabase

@@ -31,6 +31,7 @@ export default function StudyPage({
   const videoRef = useRef<HTMLIFrameElement>(null);
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const [noSubtitles, setNoSubtitles] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (type === "youtube") {
@@ -82,7 +83,15 @@ export default function StudyPage({
       const errorMessage = queryError instanceof Error ? queryError.message : String(queryError);
       if (errorMessage === "NO_SUBTITLES" || errorMessage === "NOT_FOUND") {
         setNoSubtitles(true);
+        setApiError(null);
+      } else {
+        setNoSubtitles(false);
+        setApiError(errorMessage);
+        console.error('YouTube data fetch error:', errorMessage);
       }
+    } else {
+      setApiError(null);
+      setNoSubtitles(false);
     }
   }, [queryError]);
 
@@ -170,6 +179,25 @@ export default function StudyPage({
                   <AlertCircle className="w-4 h-4" />
                   <span>Try a different video with available subtitles</span>
                 </div>
+              </div>
+            ) : apiError ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 p-8">
+                <AlertCircle className="w-16 h-16 text-destructive" />
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">
+                    Unable to Load Study Data
+                  </h3>
+                  <p className="text-muted-foreground max-w-md">
+                    {apiError}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Please refresh the page or try again later</span>
+                </div>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Refresh Page
+                </Button>
               </div>
             ) : (
               <Tabs className="flex flex-col h-full " defaultValue="grammar">

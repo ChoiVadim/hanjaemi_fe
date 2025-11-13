@@ -11,7 +11,7 @@ import Skeleton from "react-loading-skeleton";
 import { cn, formatTimestamp } from "@/lib/utils";
 import { useState } from "react";
 
-type GrammarType = "writing" | "speaking" | "common";
+export type GrammarType = "writing" | "speaking" | "common";
 
 type GrammarRule = {
   id: string;

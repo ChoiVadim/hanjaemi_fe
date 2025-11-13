@@ -11,7 +11,7 @@ import Skeleton from "react-loading-skeleton";
 import { cn, formatTimestamp } from "@/lib/utils";
 import { useState } from "react";
 
-type VocabType = "important" | "common" | "new";
+export type VocabType = "important" | "common" | "new";
 
 type VocabularyWord = {
   id: string;
